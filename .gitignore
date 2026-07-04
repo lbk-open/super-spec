@@ -1,0 +1,6 @@
+.omc/
+.sisyphus/
+.DS_Store
+.ruff_cache/
+node_modules/
+__pycache__/

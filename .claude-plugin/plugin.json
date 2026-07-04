@@ -1,0 +1,10 @@
+{
+  "name": "super-spec",
+  "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails",
+  "version": "0.1.0",
+  "author": {
+    "name": "super-spec maintainers"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/liyue2008/super-spec"
+}

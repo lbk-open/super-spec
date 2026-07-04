@@ -1,0 +1,14 @@
+{
+  "name": "super-spec",
+  "description": "Spec-driven development workflows, multi-agent coding and review, and engineering guardrails for AI coding agents",
+  "owner": {
+    "name": "super-spec maintainers"
+  },
+  "plugins": [
+    {
+      "name": "super-spec",
+      "source": "./",
+      "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails"
+    }
+  ]
+}
