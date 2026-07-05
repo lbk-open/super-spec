@@ -11,6 +11,7 @@ and skills whose instructions match the documented design.
 ## Verification commands
 
 ```bash
+./scripts/validate.sh                      # the full check suite — run before pushing (CI runs it too)
 claude plugin validate .                   # Claude Code plugin + marketplace manifests
 ls skills | grep -c '^ss-'                 # skill count — INSTALL.md asserts this number
 grep -rn 'ss-<old-name>' skills docs *.md  # after any rename/delete: zero dangling refs
@@ -38,8 +39,9 @@ through its own manifest, all committed at the repo root:
 - **OpenCode** — no package manager; users install via `npx skills` or copy into a
   discovery path.
 
-Keep `version` in sync across all three plugin manifests when releasing.
-`INSTALL.md` is the agent-executable install/upgrade/uninstall walkthrough.
+Keep `version` in sync across all three plugin manifests when releasing — releases
+are automated with release-please; see `RELEASING.md`. `INSTALL.md` is the
+agent-executable install/upgrade/uninstall walkthrough.
 
 ### Skill layout and cross-references
 

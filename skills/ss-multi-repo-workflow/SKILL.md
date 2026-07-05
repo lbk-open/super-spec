@@ -145,7 +145,7 @@ anything unresolvable is asked about, never guessed.
    limits; split a larger batch into sub-batches), **per-repo timeout of 60 minutes** (both
    overridable by asking, or by the autonomous defaults). Log each sub-process to its own file and
    poll for completion (exit code plus log growth); treat a timeout as a failure.
-6. **Monitor and collect** — parse each finished sub-process's log for the structured result block
+6. **Monitor and collect** — parse each finished sub-process's log for the structured result block (delimited by `---SS-RESULT---` / `---END-SS-RESULT---`, as emitted by `ss-coding-workflow`)
    `ss-coding-workflow` emits (see its "Process" section, step 6). Judge completion on three
    signals together: **exit code + result block + timeout**. A sub-process that exits without a
    result block counts as failed (keep its log).
