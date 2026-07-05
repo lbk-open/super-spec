@@ -63,7 +63,7 @@ Apply this section only when the change touches balances, ledgers, deposits, wit
   ❌ total := 0.1 + 0.2                 // binary float rounding error
   ✅ total := decimal.NewFromFloat(0.1).Add(decimal.NewFromFloat(0.2))
   ```
-- Deduplicate retried or redelivered operations with an idempotency key tied to the business event, not just the HTTP request — a message-queue redelivery has no request ID to key off of, but the underlying business operation (e.g., `withdrawal:{userId}:{requestId}`) still needs exactly-once effect.
+- Deduplicate retried or redelivered operations with an idempotency key tied to the business event, not just the HTTP request — a message-queue redelivery has no request ID to key off of, but the underlying business operation (e.g., `payout:{userId}:{requestId}`) still needs exactly-once effect.
 - Manual balance adjustments, reconciliation, and compensation flows need fine-grained permission checks, a reason code, an audit trail, and ledger evidence — never a silent direct write.
 - Payment/webhook callbacks must verify signature, timestamp, nonce, and replay window, and must never update a balance based solely on a client-submitted transaction reference.
 
