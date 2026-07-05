@@ -50,9 +50,16 @@ Prefer doing it by hand? The short version:
 
 - **Claude Code** — `/plugin marketplace add liyue2008/super-spec`, then
   `/plugin install super-spec@super-spec`. Skills appear as `/ss-*` commands.
-- **Codex / Pi / OpenCode** — copy `skills/*` into `~/.agents/skills/` (all three scan
-  it), keeping the `ss-*` directories and `_references/` side by side. Project-scoped:
-  `<repo>/.agents/skills/`.
+- **OpenAI Codex** — `codex plugin marketplace add https://github.com/liyue2008/super-spec`,
+  then `codex plugin add super-spec@super-spec`. Update with
+  `codex plugin marketplace upgrade super-spec`.
+- **Pi** — `pi install git:github.com/liyue2008/super-spec` (no version pin). Update with
+  `pi update --all`.
+- **OpenCode** — `npx skills add liyue2008/super-spec -a opencode`. Update with
+  `npx skills update`.
+- **Manual fallback (Codex / Pi / OpenCode)** — copy `skills/*` into `~/.agents/skills/`
+  (all three scan it), keeping the `ss-*` directories and `_references/` side by side.
+  Project-scoped: `<repo>/.agents/skills/`.
 
 Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 
@@ -215,8 +222,11 @@ Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
   /plugin marketplace remove super-spec
   ```
 
-- **Codex / Pi / OpenCode** — remove exactly what the install copied (adjust the
-  path if you installed project-scoped or to an OpenCode alternate location):
+- **Codex** — `codex plugin remove super-spec`, then optionally
+  `codex plugin marketplace remove super-spec`.
+- **Pi** — `pi remove git:github.com/liyue2008/super-spec`.
+- **Manual copies (Codex / Pi / OpenCode)** — remove exactly what the install copied
+  (adjust the path if you installed project-scoped or to an OpenCode alternate location):
 
   ```bash
   rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references

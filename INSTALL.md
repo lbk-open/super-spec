@@ -57,7 +57,40 @@ session instead.
 
 ### Step 3 — Codex, Pi, and/or OpenCode (if selected)
 
-All three discover skills from the same directory. Choose the target by scope:
+Each of the three has a native package channel that supports updates later — prefer it,
+and use the manual copy below only if the native route fails or the user asks for it.
+
+**OpenAI Codex — plugin marketplace:**
+
+```bash
+codex plugin marketplace add https://github.com/liyue2008/super-spec
+codex plugin add super-spec@super-spec
+```
+
+Verify with `codex plugin list`. Updates later: `codex plugin marketplace upgrade
+super-spec` (then confirm in the `/plugins` panel inside a Codex session — the upgrade
+refreshes the marketplace snapshot; the panel shows whether the installed plugin picked
+it up).
+
+**Pi — git package (install without a version pin so updates work):**
+
+```bash
+pi install git:github.com/liyue2008/super-spec
+```
+
+Verify with `pi list`. Updates later: `pi update --all`.
+
+**OpenCode — the `skills` CLI (community de-facto standard):**
+
+```bash
+npx skills add liyue2008/super-spec -a opencode
+```
+
+Updates later: `npx skills update`. (The same CLI can also target Codex and Claude Code
+with additional `-a` flags, if the user prefers managing everything through it.)
+
+**Manual copy (for any of the three).** All three discover skills from the same
+directory. Choose the target by scope:
 
 - **Global:** `~/.agents/skills/`
 - **Project-scoped:** `<project-root>/.agents/skills/`
@@ -128,14 +161,23 @@ Tell the user, concretely:
 
 - **Claude Code:** `claude plugin update super-spec@super-spec` (or `/plugin` →
   manage plugins inside a session).
-- **Codex / Pi / OpenCode:** re-run Step 3 — the copy is idempotent and overwrites
+- **Codex (plugin route):** `codex plugin marketplace upgrade super-spec`, then confirm
+  in the `/plugins` panel.
+- **Pi:** `pi update --all` (works because the install wasn't pinned to a version).
+- **OpenCode (`skills` CLI):** `npx skills update`.
+- **Manual copies:** re-run the copy from Step 3 — it's idempotent and overwrites
   in place.
 
 ## Uninstalling
 
 - **Claude Code:** `claude plugin uninstall super-spec@super-spec`, then optionally
   `claude plugin marketplace remove super-spec`.
-- **Codex / Pi / OpenCode:** remove exactly what Step 3 copied:
+- **Codex (plugin route):** `codex plugin remove super-spec`, then optionally
+  `codex plugin marketplace remove super-spec`.
+- **Pi:** `pi remove git:github.com/liyue2008/super-spec`.
+- **OpenCode (`skills` CLI):** `npx skills remove <skill-name>` per skill, or delete the
+  copies it created.
+- **Manual copies:** remove exactly what Step 3 copied:
 
   ```bash
   rm -rf "$TARGET"/ss-* "$TARGET/_references"

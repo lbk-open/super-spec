@@ -30,3 +30,5 @@ OpenAI Codex, Pi, and OpenCode, plus engineering guardrails and design docs.
   identical in both modes.
 - Never introduce references to private infrastructure, internal hostnames, or
   company-specific systems.
+- Keep `version` in sync across `.claude-plugin/plugin.json`,
+  `.codex-plugin/plugin.json`, and `package.json` when releasing.

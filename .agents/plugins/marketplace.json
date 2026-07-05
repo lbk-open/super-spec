@@ -1,0 +1,12 @@
+{
+  "name": "super-spec",
+  "plugins": [
+    {
+      "name": "super-spec",
+      "source": {
+        "source": "local",
+        "path": "."
+      }
+    }
+  ]
+}
