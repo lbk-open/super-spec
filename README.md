@@ -135,6 +135,25 @@ right fit, go check them out.
 
 Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
 
+## Uninstall
+
+- **Claude Code**
+
+  ```
+  /plugin uninstall super-spec@super-spec
+  /plugin marketplace remove super-spec
+  ```
+
+- **Codex / Pi / OpenCode** — remove exactly what the install copied (adjust the
+  path if you installed project-scoped or to an OpenCode alternate location):
+
+  ```bash
+  rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references
+  ```
+
+super-spec keeps no state outside the skills directory and never writes into your
+projects, so there is nothing else to clean up. Details: [INSTALL.md](INSTALL.md#uninstalling).
+
 ## License
 
 [Apache-2.0](LICENSE)
