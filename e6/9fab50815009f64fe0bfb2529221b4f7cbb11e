@@ -1,0 +1,23 @@
+release-please-config.json
+  ai_agent 1-23
+.github/workflows/release-please.yml
+  ai_agent 1-18
+.release-please-manifest.json
+  ai_agent 1-3
+scripts/validate.sh
+  ai_agent 1-104
+skills/ss-multi-repo-workflow/SKILL.md
+  ai_agent 148
+.github/workflows/ci.yml
+  ai_agent 1-14
+AGENTS.md
+  ai_agent 14,42-44
+RELEASING.md
+  ai_agent 1-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "e69fab50815009f64fe0bfb2529221b4f7cbb11e",
+  "prompts": {}
+}
