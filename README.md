@@ -25,7 +25,8 @@ https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
 
 Then ask your agent to run the workflow that matches the job:
 
-- *"Use ss-feature-workflow to implement this requirement: …"* — proposal → plan →
+- *"Use ss-feature-workflow to implement this requirement: …"* — complexity triage →
+  proposal (complex requirements only) → plan →
   multi-agent coding → review → PR, with human gates in between.
 - *"Use ss-coding-workflow in lite mode on this plan"* — code and review on the
   current branch, no PR ceremony.
@@ -123,8 +124,9 @@ What actually happens when the key skills run:
 ### Workflows
 
 - **`ss-feature-workflow` / `ss-coding-workflow`** — thin orchestration over the
-  skills above: branch → proposal → *[approval gate]* → plan → *[gate]* → coding
-  with built-in review → PR. `ss-coding-workflow` is the shorter path that starts
+  skills above: branch → complexity triage → proposal + *[approval gate]* (complex
+  requirements; simple ones go straight to plan) → plan → coding with built-in
+  review → PR. `ss-coding-workflow` is the shorter path that starts
   from an existing plan or a direct change instruction, skipping the proposal
   stages. Both support full and lite delivery modes and resume from artifacts if
   a session dies mid-flight.

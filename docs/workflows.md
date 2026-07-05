@@ -30,22 +30,25 @@ All three converge on the same tail: dispatch the coding-and-review step, let it
 
 ```mermaid
 flowchart LR
-    A[ss-create-branch] --> B[ss-proposal]
+    A[ss-create-branch] --> T{Complexity triage}
+    T -->|complex| B[ss-proposal]
     B --> G{Gate: proposal review}
     G -->|approved| C[ss-plan]
+    T -->|simple| C
     C --> D[ss-coding<br/>+ built-in review]
     D --> E{Verdict clean?}
     E -->|no, valid findings| D
     E -->|yes| F[ss-create-pr]
 ```
 
-1. Create the branch from the requirement's title or source link; the branch-creation skill infers a frontend/backend prefix on its own.
-2. Write a proposal — backend or frontend template, chosen by the nature of the requirement; ask the user if that's ambiguous.
-3. **Gate: proposal review.** Show the proposal summary and its path; wait for confirmation, a request to revise, or a decision to abort. This is the one point in feature work where being wrong is expensive — every downstream step assumes the proposal's architecture is correct.
-4. Build the execution plan from the approved proposal.
-5. Run coding and review to convergence (see below), then open the PR.
+1. Create the branch from the requirement's title or source link; the branch-creation skill infers the type prefix (`feat/`, `fix/`, …) on its own.
+2. **Triage complexity.** A requirement that spans modules, changes public interfaces or schemas, or carries real design trade-offs takes the proposal path; one with an obvious implementation path skips straight to planning. Ambiguous → ask (autonomous default: proposal — skipping design review on a complex feature costs more than an unnecessary proposal).
+3. Write a proposal *(complex path)* — a stack-neutral, high-level design: architecture, data flow, key interfaces, alternatives, risks.
+4. **Gate: proposal review** *(complex path)*. Show the proposal summary and its path; wait for confirmation, a request to revise, or a decision to abort. This is the one point in feature work where being wrong is expensive — every downstream step assumes the proposal's architecture is correct.
+5. Build the execution plan — from the approved proposal, or directly from the requirement on the simple path.
+6. Run coding and review to convergence (see below), then open the PR.
 
-Scope: this workflow is for requirements substantial enough to warrant a written architecture decision before planning. If a requirement clearly needs code changes across more than one repository, hand off to a dedicated multi-repo workflow instead of continuing single-repo.
+Scope: the proposal stage is reserved for requirements substantial enough to warrant a written architecture decision before planning; simpler feature requests still benefit from the same plan → coding → review pipeline. If a requirement clearly needs code changes across more than one repository, hand off to a dedicated multi-repo workflow instead of continuing single-repo.
 
 ### ss-troubleshooting-workflow
 

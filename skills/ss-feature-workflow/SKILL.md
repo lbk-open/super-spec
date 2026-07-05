@@ -1,6 +1,6 @@
 ---
 name: ss-feature-workflow
-description: End-to-end feature delivery — takes a PRD, requirement description, or requirement doc link and orchestrates branch creation, technical proposal, execution plan, multi-agent coding with built-in review, and PR/commit delivery. Use only when the user explicitly asks for the full feature pipeline, not for a single edit or question.
+description: End-to-end feature delivery — takes a PRD, requirement description, or requirement doc link and orchestrates branch creation, a complexity-gated technical proposal (complex requirements only), execution plan, multi-agent coding with built-in review, and PR/commit delivery. Use only when the user explicitly asks for the full feature pipeline, not for a single edit or question.
 ---
 
 # Feature Workflow
@@ -8,8 +8,10 @@ description: End-to-end feature delivery — takes a PRD, requirement descriptio
 Chains the existing `ss-*` skills into one requirement-to-delivery pipeline:
 
 ```
-ss-create-branch → ss-proposal → [Gate: proposal approval]
-→ ss-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
+ss-create-branch → [complexity triage]
+  complex → ss-proposal → [Gate: proposal approval] → ss-plan
+  simple  → ss-plan
+→ ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code or drafts a proposal/plan
@@ -34,6 +36,8 @@ mention this workflow if the user might want the full pipeline.
 - **Requirement source** — a PRD/requirement document link, a plain-text requirement
   description, or a local requirement file. If missing, ask for one before proceeding.
 - **Delivery mode** — `full` (default) or `lite`. See "Delivery Mode" below.
+- **Proposal preference** — force or skip the proposal stage, overriding the complexity
+  triage below.
 - **Skip-gates** — proceed through the proposal-approval gate without pausing.
 - **Decide-autonomously** — resolve ambiguous choices without asking, instead of pausing for
   clarification.
@@ -55,6 +59,30 @@ Mode resolution: an explicit mode input wins; otherwise ask once when the workfl
 that answer for the rest of the run. Never write the choice to a config file in the user's
 project — ask again next time.
 
+## Complexity Triage: does this requirement need a proposal?
+
+A proposal earns its cost only when there are real design decisions to review. Assess the
+requirement once, right after branch creation, and pick a path:
+
+**Run `ss-proposal` (complex)** when any of these hold:
+- The change spans multiple modules or crosses layer boundaries (API + storage + UI).
+- It introduces or changes public interfaces, data models, or storage schemas.
+- There are competing implementation approaches with real trade-offs to weigh.
+- It touches security-, money-, or data-integrity-sensitive paths.
+- The input is a full PRD, or the work clearly decomposes into many interdependent tasks.
+
+**Skip straight to `ss-plan` (simple)** when all of these hold:
+- Single module, clear implementation path, no new public interfaces or schema changes.
+- No design alternatives worth a reviewer's time — the "how" is obvious from the "what".
+
+An explicit proposal preference input overrides this triage entirely. When the assessment is
+genuinely ambiguous, ask the user (complex / simple); deciding autonomously, default to
+**complex** — skipping design review on a complex feature costs more than an unnecessary
+proposal. Either way, record the triage verdict and its one-line rationale in the run report.
+
+On the simple path there is no proposal and no proposal-approval gate; `ss-plan` works
+directly from the requirement.
+
 ## Multi-Repo Routing
 
 A feature's multi-repo nature may be visible up front, or only surface once the proposal or plan
@@ -73,9 +101,11 @@ wins on conflict).
 
 1. **Entrance, before pre-flight** — scan the input text/PRD for the heuristic signal. On a hit,
    ask (or decide autonomously) and hand off with the original input.
-2. **Proposal gate** — when the proposal's repo list has more than one entry, the gate gains an
-   extra option: switch to `ss-multi-repo-workflow` (the recommended default in that case). Hand
-   off with the proposal and the branch already created.
+2. **Proposal gate** *(complex path only)* — when the proposal's repo list has more than one
+   entry, the gate gains an extra option: switch to `ss-multi-repo-workflow` (the recommended
+   default in that case). Hand off with the proposal and the branch already created. On the
+   simple path this judgment point doesn't exist — the entrance scan and the post-plan check
+   still cover it.
 3. **After build-plan** — if a master plan was produced, hand off with it; this is deterministic,
    no question asked under autonomous mode.
 
@@ -92,8 +122,9 @@ Violating any of these means stopping and explaining to the user:
 2. **Pre-flight checks ask, they don't abort** — when a check fails, ask the user how to proceed
    instead of stopping outright. When deciding autonomously, apply the default below without
    pausing.
-3. **The proposal-approval gate is on by default** — after the proposal is drafted, pause for
-   approval; skip-gates mode skips it.
+3. **The proposal-approval gate is on by default** *(complex path)* — after the proposal is
+   drafted, pause for approval; skip-gates mode skips it. The simple path has no proposal and
+   therefore no such gate.
 4. **No gate for review — run the loop instead** — `ss-coding` has built-in review;
    after it returns, if unresolved valid findings remain, automatically re-invoke coding without
    pausing (see "Review-Acceptance Loop"). There is also no gate before delivery.
@@ -123,7 +154,7 @@ On start, probe for existing artifacts and skip completed steps:
 | Step | Completion check | On hit |
 |------|-------------------|--------|
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this requirement's branch | Reuse the branch; if it lives in a worktree, switch into it |
-| Proposal | `docs/proposals/` has a recent file matching this requirement | Reuse it; if unsure, list candidates and ask (autonomous mode picks the most recent) |
+| Proposal | `docs/proposals/` has a recent file matching this requirement | Reuse it (this implies the complex path); if unsure, list candidates and ask (autonomous mode picks the most recent) |
 | `ss-plan` | `docs/plans/` has a structured plan (contains task/file sections) | Reuse, skip |
 | `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
@@ -134,22 +165,25 @@ On start, probe for existing artifacts and skip completed steps:
 2. **`ss-create-branch`** *(full mode only)* — cut the branch from the requirement input; skip in
    lite mode. The branch-type prefix (feat/fix/...) is decided by `ss-create-branch` itself.
    Forward the worktree preference if given. Record the branch name and worktree path (if any).
-3. **Proposal** — run `ss-proposal` on the requirement. It produces a stack-neutral,
-   high-level design proposal covering whichever parts of the system the requirement
-   touches. Output goes to `docs/proposals/`.
-4. **Gate: proposal approval** — show the proposal summary and path; pause for **continue /
-   revise / abort**, plus **switch to multi-repo workflow** when the repo list has more than one
-   entry. Skip-gates mode continues automatically, but if the repo list still has more than one
-   entry, ask this one question anyway — continuing single-repo would silently drop scope.
-   "Revise" regenerates or adjusts per feedback, then confirms again. Cap revisions at 2; beyond
-   that, suggest refining the proposal separately before restarting the workflow.
-5. **`ss-plan`** — generate the execution plan from the proposal (including any delta spec).
-   If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
-6. **`ss-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
+3. **Complexity triage** — apply "Complexity Triage" above: complex → steps 4–5;
+   simple → skip to step 6. Record the verdict and rationale.
+4. **Proposal** *(complex path)* — run `ss-proposal` on the requirement. It produces a
+   stack-neutral, high-level design proposal covering whichever parts of the system the
+   requirement touches. Output goes to `docs/proposals/`.
+5. **Gate: proposal approval** *(complex path)* — show the proposal summary and path; pause for
+   **continue / revise / abort**, plus **switch to multi-repo workflow** when the repo list has
+   more than one entry. Skip-gates mode continues automatically, but if the repo list still has
+   more than one entry, ask this one question anyway — continuing single-repo would silently
+   drop scope. "Revise" regenerates or adjusts per feedback, then confirms again. Cap revisions
+   at 2; beyond that, suggest refining the proposal separately before restarting the workflow.
+6. **`ss-plan`** — generate the execution plan from the proposal (complex path) or directly
+   from the requirement (simple path), including any delta spec. If it produced a master plan,
+   hand off to `ss-multi-repo-workflow` and stop.
+7. **`ss-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
    and test verification, and enforces its own post-coding review before returning a verdict.
-7. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
+8. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
    remaining findings are judged invalid.
-8. **Delivery** *(full mode)* — call `ss-create-pr` to archive any delta spec, rebase, and open the
+9. **Delivery** *(full mode)* — call `ss-create-pr` to archive any delta spec, rebase, and open the
    PR; report the link, target branch, and status, plus a reminder that `ss-cleanup` removes the
    worktree and branch after merge. *(lite mode)* — commit with a conventional-commits message
    (push optional), then print a summary of files changed, tests run, and the review verdict.
@@ -188,6 +222,7 @@ it drives acceptance automatically:
 | Situation | Handling |
 |-----------|----------|
 | Input empty | Ask for a requirement link, description, or file path |
+| Complexity triage is ambiguous | Ask complex / simple; deciding autonomously, default to complex |
 | Proposal stage lacks information | The proposal skill asks on its own; this workflow passes it through |
 | `ss-plan` produces an empty plan | Report "empty plan", stop, return to the user |
 | Coding is blocked (repeated failures or scope overreach) | Stop, escalate, preserve the scene |
