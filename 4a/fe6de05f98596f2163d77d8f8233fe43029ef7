@@ -1,0 +1,13 @@
+README.md
+  ai_agent 28-29,127-129
+docs/workflows.md
+  ai_agent 33-34,37,44-49,51
+skills/ss-feature-workflow/SKILL.md
+  ai_agent 3,11-14,39-40,62-85,104-108,125-127,157,168-182,184,186,225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "4afe6de05f98596f2163d77d8f8233fe43029ef7",
+  "prompts": {}
+}
