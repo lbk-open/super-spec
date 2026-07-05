@@ -32,7 +32,7 @@ the work directly (or point to the one relevant `ss-*` skill).
 ## Inputs
 
 - **Execution input**, one of:
-  - a path to an existing execution plan (produced by `ss-build-plan`), or
+  - a path to an existing execution plan (produced by `ss-plan`), or
   - a plain-language change instruction (e.g., "extract OrderService's helper methods into
     OrderUtils").
   If ambiguous which one it is, ask; when deciding autonomously, treat text with a recognizable

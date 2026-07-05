@@ -9,7 +9,7 @@ Chains the existing `ss-*` skills into a single diagnose-fix-deliver flow:
 
 ```
 ss-inspect → [Gate: root-cause confirmation] → ss-create-branch
-→ ss-build-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
+→ ss-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code or drafts a plan itself. It
@@ -64,7 +64,7 @@ on conflict).
 
 | Level | Signal | Action |
 |---|---|---|
-| Deterministic | `ss-build-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row) | Hand off to `ss-multi-repo-workflow` — no question when deciding autonomously |
+| Deterministic | `ss-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row) | Hand off to `ss-multi-repo-workflow` — no question when deciding autonomously |
 | High confidence | The root-cause report's `**Repositories Requiring Fix:**` list has more than one entry | Offer hand-off at the root-cause gate; autonomous mode hands off |
 | Heuristic | The issue/alert description explicitly requires committing fixes in two or more services/repos | Ask, showing the evidence; autonomous mode hands off |
 | Exclusions | Shared API-contract repo, spec/standards submodules, services merely mentioned as callers/context with no code change, multiple modules inside one repository | Not multi-repo signals |
@@ -77,7 +77,7 @@ on conflict).
    are part of the evidence chain. When the report's repo list has more than one entry, the gate
    gains an extra option: switch to `ss-multi-repo-workflow` (the recommended default in that
    case). Hand off with the root-cause report as the planning input.
-3. **After build-plan** — a safety net for a mis-scoped root-cause report: if `ss-build-plan`'s
+3. **After build-plan** — a safety net for a mis-scoped root-cause report: if `ss-plan`'s
    scope check still detected a cross-repo span and produced a master plan, hand off with it —
    deterministic, no question asked under autonomous mode.
 
@@ -121,7 +121,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 |------|-------------------|--------|
 | `ss-inspect` | A root-cause conclusion was already produced this session, or `docs/troubleshooting/` has a recent (within 24h) report | List it and ask whether to reuse (autonomous mode reuses the most recent) |
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this issue's branch | Reuse the branch; switch into the worktree if applicable |
-| `ss-build-plan` | `docs/plans/` has a structured plan | Reuse, skip |
+| `ss-plan` | `docs/plans/` has a structured plan | Reuse, skip |
 | `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
 
@@ -139,7 +139,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
    note" or "continue to fix anyway" rather than retrying indefinitely.
 4. **`ss-create-branch`** *(full mode only)* — branch from the issue input, prefix defaulting to
    `fix/`. Forward the worktree preference. Record the branch name and worktree path.
-5. **`ss-build-plan`** — draft the fix plan from the root-cause conclusion (including any spec
+5. **`ss-plan`** — draft the fix plan from the root-cause conclusion (including any spec
    delta). If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
 6. **`ss-coding`** — execute the fix plan. It already covers TDD and test
    verification, and enforces its own post-coding review before returning a verdict.

@@ -235,7 +235,7 @@ For each significant change point:
 1. Change 1
 2. Change 2
 
-> Do not expand this into a full implementation or a file-by-file edit list — that level of detail belongs to `ss-build-plan` and the coding phase.
+> Do not expand this into a full implementation or a file-by-file edit list — that level of detail belongs to `ss-plan` and the coding phase.
 
 #### 4.4.2 [Change point name]
 

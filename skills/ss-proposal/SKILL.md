@@ -7,7 +7,7 @@ description: Use when you have a PRD or requirement description and need a compl
 
 Generate a comprehensive technical proposal from a PRD or requirement description, for any repository shape — a backend service, a frontend app (Web, iOS, Android, Flutter), or a full-stack repository.
 
-**Scope note:** a proposal is a high-level design document. It answers *what* the change is, *why* it's the right approach, and *what contracts* it introduces or touches — architecture, data flow, key interfaces, alternatives and trade-offs, risks and rollback, milestones. It does not contain implementation detail: no file-by-file edit lists, no full method bodies, no step-by-step coding instructions. That level of detail is the `ss-build-plan` skill's job, which consumes this proposal as its input.
+**Scope note:** a proposal is a high-level design document. It answers *what* the change is, *why* it's the right approach, and *what contracts* it introduces or touches — architecture, data flow, key interfaces, alternatives and trade-offs, risks and rollback, milestones. It does not contain implementation detail: no file-by-file edit lists, no full method bodies, no step-by-step coding instructions. That level of detail is the `ss-plan` skill's job, which consumes this proposal as its input.
 
 **When not to use:**
 - Small bug fixes or config-only changes with no architecture decisions.
@@ -48,7 +48,7 @@ The following are proposal failures — never allowed:
 | "Refer to module X" or "similar to page Y" without specifics | Show the concrete contract, code path, or interaction detail |
 | Introducing unnecessary complexity (new framework/middleware/library/abstraction) | Use the simplest approach with the existing tech stack; recommend a simpler path when available |
 | "While we're at it" refactoring of unrelated modules or pages | Only changes within the requirement's scope |
-| Writing out full implementations, method bodies, or a file-by-file edit list | Stay at the contract/interface level; full implementation belongs to `ss-build-plan` and the coding phase |
+| Writing out full implementations, method bodies, or a file-by-file edit list | Stay at the contract/interface level; full implementation belongs to `ss-plan` and the coding phase |
 | Only covering the happy path for UI-facing work | List every affected page/screen state: Normal / Loading / Empty / Error / Edge Case |
 
 ## Process
@@ -127,7 +127,7 @@ After writing, run this checklist:
 - Replace all with concrete content.
 
 **4. Implementation-depth check**
-- Scan for full method bodies, complete file listings, or step-by-step coding instructions that have crept past the contract level — trim them back to interface/contract descriptions and defer the rest to `ss-build-plan`.
+- Scan for full method bodies, complete file listings, or step-by-step coding instructions that have crept past the contract level — trim them back to interface/contract descriptions and defer the rest to `ss-plan`.
 
 **5. Template completeness**
 - Every applicable section has substantive content.
@@ -175,7 +175,7 @@ After output, present next-step options to the user:
 ```
 Proposal generated and saved to docs/proposals/. Suggested next steps:
 
-1. ss-build-plan on docs/proposals/<file>.md — break the proposal into an executable task plan; Phase 0 automatically generates OpenSpec delta specs
+1. ss-plan on docs/proposals/<file>.md — break the proposal into an executable task plan; Phase 0 automatically generates OpenSpec delta specs
 2. ss-coding — start multi-agent parallel coding (for smaller requirements)
 3. Manual review — have the team review the proposal first
 

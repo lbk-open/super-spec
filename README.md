@@ -95,7 +95,7 @@ What actually happens when the key skills run:
   writes a high-level design proposal to `docs/proposals/`: architecture and data
   flow, key interfaces, alternatives with trade-offs, risks, milestones. A
   self-review pass (plus an independent reviewer when available) gates the result.
-- **`ss-build-plan`** — decomposes a proposal or requirement into an executable
+- **`ss-plan`** — decomposes a proposal or requirement into an executable
   task plan: first it generates OpenSpec delta specs as the acceptance baseline,
   then breaks the work into dependency-ordered tasks, each small enough to
   implement and verify test-first. The plan file doubles as persistent state for
@@ -154,7 +154,7 @@ What actually happens when the key skills run:
 | Category | Skills |
 |---|---|
 | Living specs | `ss-write-spec`, `ss-archive`, `ss-list-changes`, `ss-show-spec`, `ss-trace-spec`, `ss-reverse-spec` |
-| Proposals & planning | `ss-proposal`, `ss-build-plan` |
+| Proposals & planning | `ss-proposal`, `ss-plan` |
 | Workflows | `ss-feature-workflow`, `ss-coding-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` |
 | Multi-agent | `ss-coding`, `ss-code-review` |
 | Git delivery | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` |

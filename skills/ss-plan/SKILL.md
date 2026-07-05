@@ -1,5 +1,5 @@
 ---
-name: ss-build-plan
+name: ss-plan
 description: Use before writing any code, once you have a requirement, technical proposal, or spec that needs to become an executable, task-level plan. Decomposes the input into self-contained, TDD-ordered tasks with explicit dependencies, exact file paths, and acceptance criteria traced to OpenSpec scenarios; splits multi-subsystem requirements into separate plans and produces a master plan when the split spans multiple repositories.
 ---
 

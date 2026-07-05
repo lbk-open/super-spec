@@ -122,10 +122,10 @@ anything unresolvable is asked about, never guessed.
    1. For large requirements, draft a proposal with `ss-proposal`
       (with its own approval gate, skippable via skip-gates). The proposal's repo list feeds the
       master plan.
-   2. Run `ss-build-plan` — its scope check detects the multi-repo span and produces the **master
+   2. Run `ss-plan` — its scope check detects the multi-repo span and produces the **master
       plan plus per-repo sub-plans**. Shared API contract changes are handled inside the proposal/
       build-plan flow as usual (contract-first: provider repos land in earlier batches).
-   3. If `ss-build-plan` does *not* produce a master plan (single repo after all), tell the user
+   3. If `ss-plan` does *not* produce a master plan (single repo after all), tell the user
       this is single-repo work and hand back to `ss-coding-workflow`/`ss-feature-workflow`.
 3. **Gate: multi-repo execution confirmation** — default on; skip-gates bypasses it. Changing code
    in N repositories at once is a large blast radius, so show and pause for approval on:
@@ -225,7 +225,7 @@ real protection.
 |-----------|----------|
 | Input empty | Ask for a master plan path, PRD, or requirement |
 | Master plan's repo table has only one row | Not multi-repo; hand back to `ss-coding-workflow` |
-| `ss-build-plan` produced no master plan | Single-repo work; hand back |
+| `ss-plan` produced no master plan | Single-repo work; hand back |
 | Repo path unresolvable and the user is unreachable (fully autonomous run) | Abort and report — never drop a repo autonomously |
 | Unified branch name already exists in a repo with unrelated commits | Ask: reuse / new suffix / abort; autonomous default: create a suffixed branch and record it |
 | Sub-process hangs (log stalls, no exit) | Kill at the timeout, treat as failed, keep the log |

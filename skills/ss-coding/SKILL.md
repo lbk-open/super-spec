@@ -14,7 +14,7 @@ Execute an implementation plan by dispatching multiple subagents in parallel, ea
 ## Inputs
 
 This skill expects one of:
-- a path to a plan file already broken into tasks (produced by the `ss-build-plan` skill);
+- a path to a plan file already broken into tasks (produced by the `ss-plan` skill);
 - a link to an external requirement or design document (wiki page, ticket, PRD);
 - a plain-language description of the requirement.
 
@@ -42,16 +42,16 @@ digraph input_routing {
     "User input" [shape=ellipse];
     "Has Task structure?" [shape=diamond];
     "Inline quick mode?" [shape=diamond];
-    "Call ss-build-plan" [shape=box];
+    "Call ss-plan" [shape=box];
     "Full pipeline" [shape=box];
     "Inline mode" [shape=box];
 
     "User input" -> "Has Task structure?";
     "Has Task structure?" -> "Inline quick mode?" [label="yes"];
-    "Has Task structure?" -> "Call ss-build-plan" [label="no"];
+    "Has Task structure?" -> "Call ss-plan" [label="no"];
     "Inline quick mode?" -> "Inline mode" [label="≤2 tasks"];
     "Inline quick mode?" -> "Full pipeline" [label=">2 tasks"];
-    "Call ss-build-plan" -> "Full pipeline";
+    "Call ss-plan" -> "Full pipeline";
 }
 ```
 
@@ -61,11 +61,11 @@ digraph input_routing {
 
 | Input | Detection | Action |
 |---|---|---|
-| `ss-build-plan` output | file under `docs/plans/`, has Task/Step structure | execute (inline or full) |
-| Plain-language requirement | plain text, no Task structure | run `ss-build-plan` on the text, then execute |
-| Link to an external doc | a URL rather than a local file path | run `ss-build-plan` on the link, then execute |
-| Local markdown (requirement/proposal) | `.md` file without Task structure | run `ss-build-plan` on the path, then execute |
-| Proposal-writing output | file under `docs/proposals/`, has architecture but no Tasks | run `ss-build-plan` on the path, then execute |
+| `ss-plan` output | file under `docs/plans/`, has Task/Step structure | execute (inline or full) |
+| Plain-language requirement | plain text, no Task structure | run `ss-plan` on the text, then execute |
+| Link to an external doc | a URL rather than a local file path | run `ss-plan` on the link, then execute |
+| Local markdown (requirement/proposal) | `.md` file without Task structure | run `ss-plan` on the path, then execute |
+| Proposal-writing output | file under `docs/proposals/`, has architecture but no Tasks | run `ss-plan` on the path, then execute |
 
 **Edge case — plan has 0 tasks:** tell the user "the plan is empty, nothing to execute."
 
@@ -228,7 +228,7 @@ Run this after tests/lint pass and before `ss-code-review`:
 4. Re-dispatch implementers to add the missing tests, then rerun tests and this gate.
 5. Maximum 2 compliance cycles; if still uncovered, stop and escalate to the user.
 
-This gate validates spec coverage only — it doesn't rewrite or invent specs during coding. Missing or incorrect specs get fixed by going back to `ss-build-plan` or `ss-write-spec`.
+This gate validates spec coverage only — it doesn't rewrite or invent specs during coding. Missing or incorrect specs get fixed by going back to `ss-plan` or `ss-write-spec`.
 
 ### Step 5.6: Full-Scope Gate
 

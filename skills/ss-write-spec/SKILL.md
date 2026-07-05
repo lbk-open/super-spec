@@ -6,7 +6,7 @@ description: Generates or updates OpenSpec delta specs under openspec/changes/<c
 # Write OpenSpec Delta
 
 Generate OpenSpec-compatible delta specs under `openspec/changes/<change-id>/`. This is a
-plumbing skill: day-to-day development normally goes through the `ss-build-plan` skill,
+plumbing skill: day-to-day development normally goes through the `ss-plan` skill,
 whose Phase 0 runs this same logic automatically.
 
 ## When To Use
@@ -131,5 +131,5 @@ Report:
 - ADDED / MODIFIED / REMOVED / RENAMED counts
 - any user decisions still pending
 
-Suggest the next step: run the `ss-build-plan` skill with the same input to generate the
+Suggest the next step: run the `ss-plan` skill with the same input to generate the
 execution plan.

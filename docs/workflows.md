@@ -6,7 +6,7 @@ A workflow skill exists to remove that burden. It is not a new capability — ev
 
 ## Design Principles
 
-**Thin orchestration.** A workflow skill contains no implementation logic of its own. It is a declarative sequence: call skill A, take its output, hand it to skill B, pause at the defined gates, report progress. All the actual work — writing a proposal, building a plan, writing code, reviewing a diff, opening a PR — lives in the skill being called. If you ever find yourself tempted to have a workflow skill reimplement part of what `ss-create-branch` or `ss-build-plan` already does, that's a sign the boundary has been crossed. Duplicated logic drifts out of sync; a single skill that owns a responsibility doesn't.
+**Thin orchestration.** A workflow skill contains no implementation logic of its own. It is a declarative sequence: call skill A, take its output, hand it to skill B, pause at the defined gates, report progress. All the actual work — writing a proposal, building a plan, writing code, reviewing a diff, opening a PR — lives in the skill being called. If you ever find yourself tempted to have a workflow skill reimplement part of what `ss-create-branch` or `ss-plan` already does, that's a sign the boundary has been crossed. Duplicated logic drifts out of sync; a single skill that owns a responsibility doesn't.
 
 **Artifacts as state.** A branch, a proposal file, a plan with checkboxes, an open PR — each is already a durable record of "this step happened." Workflows don't need a separate state file to track progress; they read the repository. This is also what makes resuming after an interrupted session possible (see below).
 
@@ -32,7 +32,7 @@ All three converge on the same tail: dispatch the coding-and-review step, let it
 flowchart LR
     A[ss-create-branch] --> B[ss-proposal]
     B --> G{Gate: proposal review}
-    G -->|approved| C[ss-build-plan]
+    G -->|approved| C[ss-plan]
     C --> D[ss-coding<br/>+ built-in review]
     D --> E{Verdict clean?}
     E -->|no, valid findings| D
@@ -53,7 +53,7 @@ Scope: this workflow is for requirements substantial enough to warrant a written
 flowchart LR
     A[ss-inspect] --> G{Gate: root-cause review}
     G -->|confirmed| B[ss-create-branch]
-    B --> C[ss-build-plan]
+    B --> C[ss-plan]
     C --> D[ss-coding<br/>+ built-in review]
     D --> E{Verdict clean?}
     E -->|no, valid findings| D
@@ -81,7 +81,7 @@ flowchart LR
 
 This is the workflow for two related but distinct inputs, auto-detected:
 
-- **An execution plan** — a file with task/step structure, typically produced by `ss-build-plan` in an earlier session. Handed straight to the coding step.
+- **An execution plan** — a file with task/step structure, typically produced by `ss-plan` in an earlier session. Handed straight to the coding step.
 - **A code-change instruction** — a short natural-language description of what to change. Handed to the coding skill's own inline quick-mode path, which skips full plan generation for changes that reduce to a task or two.
 
 There is no proposal step and no separate planning step — the input already carries the plan, or is small enough that generating one would be overhead. Branch naming follows the plan's title, or a summary of the instruction with a prefix inferred from its nature (`feat/`, `refactor/`, …); ask if that inference is unclear. Because there's no architectural decision or root cause to get wrong upfront, this workflow has no default gate at all — the coding-and-review loop is the only checkpoint, and it doesn't pause for humans either (see below).
@@ -133,12 +133,12 @@ This probing is also what makes the human gates safe to interleave with real wor
 Every skill in super-spec, workflows included, is a single markdown file interpreted by whichever host is running it — Claude Code, OpenAI Codex, Pi, or OpenCode. That single-source approach only holds up if the workflow body doesn't quietly assume host-specific behavior:
 
 - **Gates render differently, not differently in substance.** A host with structured interactive prompts shows the gate as a choice; a host that only supports free-form conversation shows the same choice as a text question and waits for a reply. The workflow's job is to make the pause and its options explicit either way — never to assume a UI affordance that might not exist.
-- **Skill-to-skill invocation reliability varies.** Some hosts chain a call from one skill into another deterministically; others treat it as a strong hint that a capable model usually follows but isn't guaranteed to. Because of that gap, a workflow's step list is always spelled out explicitly ("now call `ss-build-plan` with this input") rather than implied — on a host where chaining is less reliable, an explicit instruction in the skill body is the difference between the workflow completing and it stalling silently after one step.
+- **Skill-to-skill invocation reliability varies.** Some hosts chain a call from one skill into another deterministically; others treat it as a strong hint that a capable model usually follows but isn't guaranteed to. Because of that gap, a workflow's step list is always spelled out explicitly ("now call `ss-plan` with this input") rather than implied — on a host where chaining is less reliable, an explicit instruction in the skill body is the difference between the workflow completing and it stalling silently after one step.
 - **One source, documented differences.** Rather than fork the workflow per host, differences in reliability and gate presentation are called out inline in the skill body, so the same file stays the single source of truth across all four.
 
 ## Boundaries
 
-A workflow skill is an optional layer on top of skills that remain independently useful — nothing stops a user from invoking `ss-build-plan` or `ss-create-pr` directly instead of going through a workflow.
+A workflow skill is an optional layer on top of skills that remain independently useful — nothing stops a user from invoking `ss-plan` or `ss-create-pr` directly instead of going through a workflow.
 
 | Anti-pattern | Why it hurts | Do this instead |
 |---|---|---|

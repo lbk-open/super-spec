@@ -9,7 +9,7 @@ Chains the existing `ss-*` skills into one requirement-to-delivery pipeline:
 
 ```
 ss-create-branch → ss-proposal → [Gate: proposal approval]
-→ ss-build-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
+→ ss-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code or drafts a proposal/plan
@@ -64,7 +64,7 @@ wins on conflict).
 
 | Level | Signal | Action |
 |---|---|---|
-| Deterministic | `ss-build-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row) | Hand off to `ss-multi-repo-workflow` — no question when deciding autonomously |
+| Deterministic | `ss-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row) | Hand off to `ss-multi-repo-workflow` — no question when deciding autonomously |
 | High confidence | The proposal's `**Repositories Involved:**` list has more than one entry | Ask at the proposal gate; autonomous mode hands off |
 | Heuristic | The requirement/PRD explicitly requires committing code in two or more services/apps/repos; both backend and frontend are needed and this repo covers only one side | Ask, showing the evidence; autonomous mode hands off |
 | Exclusions | Shared API-contract repo, spec/standards submodules, read-only mentions of other services, multiple modules inside one repository | Not multi-repo signals |
@@ -124,7 +124,7 @@ On start, probe for existing artifacts and skip completed steps:
 |------|-------------------|--------|
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this requirement's branch | Reuse the branch; if it lives in a worktree, switch into it |
 | Proposal | `docs/proposals/` has a recent file matching this requirement | Reuse it; if unsure, list candidates and ask (autonomous mode picks the most recent) |
-| `ss-build-plan` | `docs/plans/` has a structured plan (contains task/file sections) | Reuse, skip |
+| `ss-plan` | `docs/plans/` has a structured plan (contains task/file sections) | Reuse, skip |
 | `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
 
@@ -143,7 +143,7 @@ On start, probe for existing artifacts and skip completed steps:
    entry, ask this one question anyway — continuing single-repo would silently drop scope.
    "Revise" regenerates or adjusts per feedback, then confirms again. Cap revisions at 2; beyond
    that, suggest refining the proposal separately before restarting the workflow.
-5. **`ss-build-plan`** — generate the execution plan from the proposal (including any delta spec).
+5. **`ss-plan`** — generate the execution plan from the proposal (including any delta spec).
    If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
 6. **`ss-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
    and test verification, and enforces its own post-coding review before returning a verdict.
@@ -189,7 +189,7 @@ it drives acceptance automatically:
 |-----------|----------|
 | Input empty | Ask for a requirement link, description, or file path |
 | Proposal stage lacks information | The proposal skill asks on its own; this workflow passes it through |
-| `ss-build-plan` produces an empty plan | Report "empty plan", stop, return to the user |
+| `ss-plan` produces an empty plan | Report "empty plan", stop, return to the user |
 | Coding is blocked (repeated failures or scope overreach) | Stop, escalate, preserve the scene |
 | Review-acceptance loop exceeds max rounds | Escalate (see Convergence protection) |
 | No PR-hosting CLI, user chose "continue" | Stop before delivery, prompt to open the PR manually |

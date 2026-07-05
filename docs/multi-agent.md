@@ -49,7 +49,7 @@ This discovery step is also where `TEST_COMMAND` and `LINT_COMMAND` get determin
 
 ### Input Routing
 
-The skill accepts either a structured execution plan (task and step headings, a file list per task — typically what `ss-build-plan` produces) or a short natural-language change description with no such structure. Structure-free input first gets turned into a plan; anything already structured with two tasks or fewer skips straight to an **inline quick mode** that dispatches a single implementer per task without the full parallel machinery — small changes don't benefit from orchestration overhead they'd otherwise pay for.
+The skill accepts either a structured execution plan (task and step headings, a file list per task — typically what `ss-plan` produces) or a short natural-language change description with no such structure. Structure-free input first gets turned into a plan; anything already structured with two tasks or fewer skips straight to an **inline quick mode** that dispatches a single implementer per task without the full parallel machinery — small changes don't benefit from orchestration overhead they'd otherwise pay for.
 
 ### Dependency Grouping and Dispatch
 
