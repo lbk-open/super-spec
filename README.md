@@ -84,6 +84,71 @@ Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
   principles, and anti-mistake rules for AI agents (core + per-language). Never
   copied into your project; read by skills at runtime.
 
+## How it works
+
+What actually happens when the key skills run:
+
+### Development
+
+- **`ss-proposal`** — reads the requirement or PRD, filters it down to this
+  repository's boundary, studies the existing architecture and conventions, then
+  writes a high-level design proposal to `docs/proposals/`: architecture and data
+  flow, key interfaces, alternatives with trade-offs, risks, milestones. A
+  self-review pass (plus an independent reviewer when available) gates the result.
+- **`ss-build-plan`** — decomposes a proposal or requirement into an executable
+  task plan: first it generates OpenSpec delta specs as the acceptance baseline,
+  then breaks the work into dependency-ordered tasks, each small enough to
+  implement and verify test-first. The plan file doubles as persistent state for
+  resuming later.
+- **`ss-coding`** — reads the plan, groups independent tasks, and dispatches them
+  to parallel implementer subagents. Each subagent gets the full task text, the
+  relevant delta specs, and the guardrails pasted into its prompt, and works
+  test-first. When all tasks land, it runs the test suite, invokes
+  `ss-code-review`, and loops on the fix list until the verdict is APPROVED —
+  then reports a test-verified commit plus a manual acceptance checklist.
+- **`ss-code-review`** — fans the diff out to parallel reviewers with distinct
+  lenses: general code quality, compliance with guardrails and project specs, and
+  cross-module integration. Findings are confidence-filtered, deduplicated, and
+  merged into a severity-rated verdict (APPROVED / NEEDS_CHANGES /
+  CRITICAL_ISSUES) with a structured fix list that `ss-coding` can act on.
+
+### Troubleshooting
+
+- **`ss-inspect`** — staged, evidence-driven root-cause analysis: pin down the
+  symptom, gather evidence from multiple sources (logs, traces, metrics, code,
+  git history), form competing hypotheses, and try to falsify them — reproducing
+  the failure where possible — before writing a root-cause report with a
+  recommended fix and the repositories requiring changes.
+
+### Workflows
+
+- **`ss-feature-workflow` / `ss-coding-workflow`** — thin orchestration over the
+  skills above: branch → proposal → *[approval gate]* → plan → *[gate]* → coding
+  with built-in review → PR. `ss-coding-workflow` is the shorter path that starts
+  from an existing plan or a direct change instruction, skipping the proposal
+  stages. Both support full and lite delivery modes and resume from artifacts if
+  a session dies mid-flight.
+- **`ss-troubleshooting-workflow`** — runs `ss-inspect` first, holds at a
+  root-cause confirmation gate, and only then cuts a branch and drives the fix
+  through the same coding-and-review path.
+- **`ss-multi-repo-workflow`** — for changes spanning repositories: splits the
+  work per repo, launches a headless agent process in each (running
+  `ss-coding-workflow`), schedules them in dependency batches, and aggregates the
+  per-repo results into one report. The orchestrator never edits code itself.
+
+### Git delivery
+
+- **`ss-create-branch`** — derives a typed branch name (`feat/`, `fix/`, …) from
+  the requirement and cuts it from the default branch, optionally in an isolated
+  worktree (explicit request > repo convention > ask once).
+- **`ss-create-pr`** — runs the quality gates first (tests, lint, leftover-debris
+  scan), writes conventional commits, detects the forge from the remote (`gh` for
+  GitHub, `glab` for GitLab), and opens a PR with a description generated from
+  the plan and specs. No remote or no CLI? It degrades to local commits plus a
+  change summary — not a failure.
+- **`ss-cleanup`** — after the merge: removes the branch and worktree, syncs the
+  default branch, and exits fast when there's nothing to clean (lite mode).
+
 ## Skill catalog
 
 | Category | Skills |
