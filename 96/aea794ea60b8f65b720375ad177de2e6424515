@@ -1,0 +1,19 @@
+.codex-plugin/plugin.json
+  ai_agent 1-6
+INSTALL.md
+  ai_agent 60-93,164-168,175-180
+README.md
+  ai_agent 53-62,225-229
+package.json
+  ai_agent 1-19
+.agents/plugins/marketplace.json
+  ai_agent 1-12
+AGENTS.md
+  ai_agent 33-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "96aea794ea60b8f65b720375ad177de2e6424515",
+  "prompts": {}
+}
