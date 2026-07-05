@@ -1,5 +1,7 @@
 # super-spec
 
+English | [简体中文](README.zh-CN.md)
+
 > Spec-driven development toolkit for AI coding agents.
 
 super-spec packages battle-tested engineering workflows as portable
