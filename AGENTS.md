@@ -10,8 +10,8 @@ OpenAI Codex, Pi, and OpenCode, plus engineering guardrails and design docs.
   - `skills/ss-guardrails/` — security / quality / anti-error checklists (core + per-language),
     read by other skills at runtime via sibling relative paths (`../ss-guardrails/core.md`).
     Guardrails are never copied into user projects.
-  - `skills/_references/` — shared prompt templates used by multi-agent skills
-    (referenced as `../_references/<file>.md`).
+  - `skills/_references/` — shared prompt/reference templates used across workflow,
+    proposal, spec, and multi-agent skills (referenced as `../_references/<file>.md`).
 - `docs/` — design documentation (architecture, workflows, multi-agent, spec-driven,
   worktree & multi-repo, guardrails rationale).
 - `.claude-plugin/` — Claude Code plugin and marketplace manifests; the repo root is the plugin.

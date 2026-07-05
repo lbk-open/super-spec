@@ -47,10 +47,19 @@ serves every supported tool because of where each tool looks for skills:
   and `.claude-plugin/plugin.json` register it, and Claude Code auto-discovers every
   `skills/*/SKILL.md` inside — there's no separate command manifest to keep in sync
   with the skill files themselves.
-- **Codex CLI, Pi, and OpenCode** all look for skills at `~/.agents/skills/<name>/SKILL.md`,
-  the shared agentskills.io filesystem convention. Installing the toolkit for these
-  tools means copying or symlinking each `skills/ss-*` directory into that path —
-  same file, same content, no rewrite.
+- **Codex CLI** installs the repo as a plugin: `.codex-plugin/plugin.json` plus
+  `.agents/plugins/marketplace.json` make the repository a Codex plugin marketplace
+  (`codex plugin marketplace add` / `upgrade`), and the plugin's `skills` field points
+  at the same `skills/` directory.
+- **Pi** installs the repo as a git package: `package.json` declares
+  `"pi": {"skills": ["./skills"]}`, so `pi install git:…` (and later `pi update --all`)
+  wires the same files in natively.
+- **OpenCode** has no package manager of its own; the community-standard `npx skills`
+  CLI installs into its discovery paths. All three tools also scan
+  `~/.agents/skills/<name>/SKILL.md` — the shared agentskills.io filesystem
+  convention — so a plain copy of each `skills/ss-*` directory into that path works as
+  a manual fallback. Same file, same content, no rewrite; [INSTALL.md](../INSTALL.md)
+  is the agent-executable walkthrough of all of these routes.
 
 ```mermaid
 flowchart LR
@@ -81,6 +90,12 @@ super-spec/
 ├── .claude-plugin/
 │   ├── marketplace.json         # registers this repo as a Claude Code plugin source
 │   └── plugin.json              # plugin manifest (name, description, version)
+├── .codex-plugin/
+│   └── plugin.json              # Codex plugin manifest (skills: ./skills/)
+├── .agents/
+│   └── plugins/marketplace.json # makes the repo a Codex plugin marketplace
+├── package.json                 # pi package manifest (pi.skills: ./skills)
+├── INSTALL.md                   # agent-executable install/upgrade/uninstall guide
 ├── skills/
 │   ├── ss-<name>/
 │   │   └── SKILL.md             # one skill = one directory = one SKILL.md
@@ -95,7 +110,8 @@ super-spec/
 │   │   ├── ios.md
 │   │   └── flutter.md
 │   └── _references/
-│       └── <shared-prompt-template>.md   # prompt templates reused by multi-agent skills
+│       └── <shared-template>.md # shared prompt/reference templates used across
+│                                # workflow, proposal, spec, and multi-agent skills
 └── docs/
     ├── architecture.md            # this document
     ├── guardrails.md              # why guardrails cover only safety/quality/anti-error
