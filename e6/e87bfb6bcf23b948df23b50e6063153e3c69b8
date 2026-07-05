@@ -1,0 +1,39 @@
+skills/ss-archive/SKILL.md
+  ai_agent 79
+skills/ss-reverse-spec/SKILL.md
+  ai_agent 79
+skills/ss-feature-workflow/SKILL.md
+  ai_agent 12,67,127,146,192
+skills/ss-proposal/SKILL.md
+  ai_agent 10,51,130,178
+skills/_references/proposal-template.md
+  ai_agent 238
+skills/ss-coding-workflow/SKILL.md
+  ai_agent 35
+skills/ss-troubleshooting-workflow/SKILL.md
+  ai_agent 12,67,80,124,142
+docs/multi-agent.md
+  ai_agent 52
+skills/ss-multi-repo-workflow/SKILL.md
+  ai_agent 125,128,228
+docs/architecture.md
+  ai_agent 123
+docs/workflows.md
+  ai_agent 9,35,56,84,136,141
+skills/ss-coding/SKILL.md
+  ai_agent 17,45,51,54,64-68,231
+skills/ss-write-spec/SKILL.md
+  ai_agent 9,134
+skills/_references/proposal-writing.md
+  ai_agent 14,69
+README.md
+  ai_agent 98,157
+skills/_references/openspec-skeleton.md
+  ai_agent 37,40,64,84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "e6e87bfb6bcf23b948df23b50e6063153e3c69b8",
+  "prompts": {}
+}
