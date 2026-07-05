@@ -1,0 +1,13 @@
+docs/multi-agent.md
+  ai_agent 102,105
+AGENTS.md
+  ai_agent 13-14
+docs/architecture.md
+  ai_agent 50-62,93-98,113-114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "10f911b94d26dd25eb7c220ae2ebf2ae003acdb4",
+  "prompts": {}
+}
