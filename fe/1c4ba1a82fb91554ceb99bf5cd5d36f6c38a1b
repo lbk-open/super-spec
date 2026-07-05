@@ -1,0 +1,11 @@
+INSTALL.md
+  ai_agent 1-146
+README.md
+  ai_agent 18-19,22-23,68-70,73-74,77,79-83,85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "fe1c4ba1a82fb91554ceb99bf5cd5d36f6c38a1b",
+  "prompts": {}
+}
