@@ -141,8 +141,12 @@ What actually happens when the key skills run:
 ### Git delivery
 
 - **`ss-create-branch`** — derives a typed branch name (`feat/`, `fix/`, …) from
-  the requirement and cuts it from the default branch, optionally in an isolated
-  worktree (explicit request > repo convention > ask once).
+  the requirement and cuts it from the default branch — optionally in an isolated
+  **git worktree** (explicit request > repo convention > ask once), so the branch
+  gets its own directory: the main checkout stays clean, parallel tasks don't
+  trample each other, and an interrupted run leaves nothing dirty behind. It uses
+  your agent's native worktree tooling when available, falling back to a
+  git-ignored `.worktrees/` directory in the project.
 - **`ss-create-pr`** — runs the quality gates first (tests, lint, leftover-debris
   scan), writes conventional commits, detects the forge from the remote (`gh` for
   GitHub, `glab` for GitLab), and opens a PR with a description generated from
