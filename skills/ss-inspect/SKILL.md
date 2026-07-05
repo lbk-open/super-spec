@@ -43,25 +43,6 @@ Ask for (or infer from context) whichever of these is available:
 
 If none of this is clear, do not start investigating — go to Phase 1 and ask the user to pin it down.
 
-## Prerequisite: do you need runtime environment access?
-
-Pure code analysis does **not** need environment access:
-- The bug reproduces locally (failing test, logic error, compile error).
-- The issue is purely in code logic (wrong condition, type error, off-by-one).
-- A stack trace points to a clear code path with no external dependency.
-- The issue can be reproduced and fixed with unit tests alone.
-
-Runtime investigation **does** need environment access when:
-- The issue involves an external call (database, cache, queue, downstream service).
-- It only reproduces in a deployed environment, not locally.
-- You need logs, traces, metrics, or alert history.
-- You need to inspect or compare runtime configuration.
-- The error references network, timeout, or connection failures.
-
-If you need environment access: check whether `APPLICATION.md` exists at the project root.
-- If yes, read it for server addresses, configuration-center access, middleware endpoints, and observability tooling.
-- If no, stop and ask the user for environment access details — or an environment map such as an `APPLICATION.md` if the project keeps one. You cannot troubleshoot a runtime issue you have no access into.
-
 ## The six phases
 
 Complete each phase before moving to the next.
@@ -248,7 +229,6 @@ Before declaring this, double check: did you really check every source, and did 
 | Assume the last deploy caused it | Correlation isn't causation | Check the metrics timeline against the deploy time |
 | Fix the symptom, not the cause | The issue recurs | Trace to root cause via Phase 3 |
 | Skip hypothesis verification | You may be fixing the wrong thing | Phase 5 is mandatory |
-| Investigate without environment access | Can't gather real evidence | Get environment access details (or an environment map like `APPLICATION.md`) first |
 | Propose a fix at LOW confidence | Wastes time on the wrong fix | Require HIGH confidence (2+ sources) |
 
 ## Stop signs
@@ -258,7 +238,6 @@ Stop and back up if you catch yourself:
 - Relying on a single source for root cause.
 - Saying "probably" or "maybe" without evidence — that's a guess.
 - Attempting a fourth fix after three failures.
-- Investigating a runtime issue without environment access.
 - Assuming without reproducing (skipping Phase 5).
 - Skipping traces because "logs are enough" — traces show the *whole* chain.
 

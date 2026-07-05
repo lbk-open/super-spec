@@ -57,7 +57,7 @@ The following are proposal failures — never allowed:
 
 After reading the PRD, identify what's relevant to **this repository**:
 
-1. **Identify this repository's role.** Read `APPLICATION.md` (if it exists) or analyze the codebase to understand what this repository is responsible for — a backend service, a frontend app, or both.
+1. **Identify this repository's role.** Read the project's own docs (README, architecture notes) or analyze the codebase to understand what this repository is responsible for — a backend service, a frontend app, or both.
 2. **Extract the relevant scope from the PRD.** A PRD typically spans multiple services and frontends. Filter out only the parts that belong to this repository.
 3. **Define the boundary.** Clearly identify:
    - What this repository WILL implement (in-scope functionality, pages, or endpoints)
