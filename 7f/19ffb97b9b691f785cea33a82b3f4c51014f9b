@@ -1,0 +1,9 @@
+skills/ss-proposal/SKILL.md
+  ai_agent 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "7f19ffb97b9b691f785cea33a82b3f4c51014f9b",
+  "prompts": {}
+}
