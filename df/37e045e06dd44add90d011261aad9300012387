@@ -1,0 +1,43 @@
+skills/_references/proposal-writing.md
+  ai_agent 8,14,20-22,27-30,33,37-44,49,52,54,58,60,68
+skills/ss-guardrails/SKILL.md
+  ai_agent 3
+skills/_references/proposal-template.md
+  ai_agent 1-3,15,19-20,22,34-35,40-50,52-60,64,68,70,72-75,77,81-90,92,99-100,107,109,111,113,119,147,153-159,184,190-243,246,248,250-256,260,262,265,267,271,278-312
+skills/ss-build-plan/SKILL.md
+  ai_agent 207,216,451,483
+docs/guardrails.md
+  ai_agent 83,119-120
+skills/ss-feature-workflow/SKILL.md
+  ai_agent 11-12,19,21-22,97,102,128,137-139,148,159,173,177,182
+INSTALL.md
+  ai_agent 83,91
+docs/workflows.md
+  ai_agent 33,36,57,76,91
+docs/multi-agent.md
+  ai_agent 3,22,42,81,92,127,139,155
+skills/ss-write-spec/SKILL.md
+  ai_agent 16
+README.md
+  ai_agent 92,94,96-97,136
+skills/ss-create-pr/SKILL.md
+  ai_agent 12
+skills/ss-proposal/SKILL.md
+  ai_agent 2-3,6,8-10,14,17,30-31,42-44,46-52,56,58,60-65,68,77-86,90,99,101-105,109-111,118,129-134,138-139,141,143,179
+skills/ss-multi-repo-workflow/SKILL.md
+  ai_agent 122
+docs/architecture.md
+  ai_agent 112,123-125,127
+skills/ss-inspect/SKILL.md
+  ai_agent 63,150,251
+skills/ss-coding-workflow/SKILL.md
+  ai_agent 11,17-18,110,122,154,166,170,174,183
+skills/ss-troubleshooting-workflow/SKILL.md
+  ai_agent 12,19-20,125,144,155,167,171
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "df37e045e06dd44add90d011261aad9300012387",
+  "prompts": {}
+}
