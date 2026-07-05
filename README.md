@@ -15,11 +15,12 @@ the OpenSpec directory convention.
 
 ## Quick start
 
-Install (Claude Code shown; other agents below):
+Let your agent install super-spec for you — paste this into any agent session
+(Claude Code, Codex, Pi, OpenCode, …):
 
 ```
-/plugin marketplace add liyue2008/super-spec
-/plugin install super-spec@super-spec
+Install super-spec by following the instructions here:
+https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
 ```
 
 Then ask your agent to run the workflow that matches the job:
@@ -64,28 +65,24 @@ Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
 
 ## Installation
 
-### Claude Code
+**Recommended: let an AI agent install it.** [INSTALL.md](INSTALL.md) is written for an
+agent to execute — platform selection, copying, verification, and collision checks
+included. Paste this into your agent session:
 
 ```
-/plugin marketplace add liyue2008/super-spec
-/plugin install super-spec@super-spec
+Install super-spec by following the instructions here:
+https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
 ```
 
-Skills appear as `/ss-*` commands (e.g., `/ss-feature-workflow`).
+Prefer doing it by hand? The short version:
 
-### OpenAI Codex, Pi, and OpenCode
+- **Claude Code** — `/plugin marketplace add liyue2008/super-spec`, then
+  `/plugin install super-spec@super-spec`. Skills appear as `/ss-*` commands.
+- **Codex / Pi / OpenCode** — copy `skills/*` into `~/.agents/skills/` (all three scan
+  it), keeping the `ss-*` directories and `_references/` side by side. Project-scoped:
+  `<repo>/.agents/skills/`.
 
-All three discover skills from `~/.agents/skills/`:
-
-```bash
-git clone https://github.com/liyue2008/super-spec.git
-mkdir -p ~/.agents/skills
-cp -R super-spec/skills/* ~/.agents/skills/
-```
-
-Project-scoped install works too: place the same content under `<repo>/.agents/skills/`.
-OpenCode additionally reads `~/.config/opencode/skills/` and `.opencode/skills/` if you
-prefer those locations.
+Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 
 ## Skill catalog
 
