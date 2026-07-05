@@ -1,0 +1,9 @@
+skills/ss-guardrails/core.md
+  ai_agent 66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b4979c6d1df258fba46c83284426445f45bdfa7e",
+  "prompts": {}
+}
