@@ -5,68 +5,59 @@
 ## When to Use
 
 - Reviewing a technical proposal document during code review
-- The `ss-multi-agent-cr` skill checking proposal quality
+- The `ss-code-review` skill checking proposal quality
 - Manual proposal review
 
 ## General Principles
 
 1. **Concise is key** — write only what the technical decision needs; don't restate the PRD.
-2. **Actionable** — describe down to code, config, and API level, not just concepts.
+2. **Actionable** — describe down to the interface/contract level (API, schema, component props), not just concepts. Full implementations and file-by-file edit lists belong to `ss-build-plan`, not the proposal.
 3. **Trade-offs explicit** — when multiple options exist, compare them and recommend one.
 4. **Risks up front** — surface risks and external dependencies; flag blockers.
 5. **Progressive disclosure** — high-level architecture first, details after.
 6. **Full coverage** — the proposal must cover every point in the PRD. Unless the user explicitly requested it, don't phase the delivery (phase 1 / phase 2), design only a P0/core subset, or substitute an MVP, demo, or simplified design for the full one. Any user-approved scope reduction must be recorded in the proposal along with where that instruction came from.
 
-## Backend Proposal Checklist
+## Proposal Checklist
+
+> Applies to backend, frontend (Web, iOS, Android, Flutter), and full-stack proposals alike. Skip a check only when its subsection plainly doesn't apply to this repository's shape (e.g., a pure backend service skips the UI-contract checks). Platform-specific rules live in the stack guardrails (`../ss-guardrails/web.md`, `ios.md`, `android.md`, `flutter.md`).
 
 ### Structural Completeness
 
 - [ ] Revision history (version/date/author)
-- [ ] Overview (background/glossary/related docs)
-- [ ] High-level design (current architecture/affected apps/target design)
-- [ ] Detailed design (performance/business flow/API/data model)
+- [ ] Overview (problem statement/terminology/related docs)
+- [ ] Scope & boundary (in-scope/out-of-scope, `Repositories Involved:` field present)
+- [ ] Summary design (current state/affected components/target design & data flow)
+- [ ] Key interfaces & contracts (API/data model/UI contracts, whichever apply)
 - [ ] Non-functional design (compatibility/migration/rollback)
 - [ ] Risk assessment (at least 2 items)
-- [ ] Effort estimate
+- [ ] Milestones
 
 ### Content Quality
 
-- [ ] Background section is no more than ~10% of the document
-- [ ] Detailed design is at least ~60% of the document
-- [ ] Each change point shows a "current → new" comparison, with code
-- [ ] The data model includes full DDL (CREATE TABLE with fields, indexes, comments)
-- [ ] New endpoints include complete request/response JSON
-- [ ] Performance requirements are quantified (P95/P99 latency, QPS)
+- [ ] Background/problem-statement section is no more than ~10% of the document
+- [ ] Key interfaces & contracts is at least ~60% of the document
+- [ ] Each change point shows a "current → new" comparison, described at the contract level (prose, with pseudocode only where it clarifies a contract — no full implementations)
+- [ ] The data model (if present) includes a full schema definition (e.g., CREATE TABLE with fields, indexes, comments)
+- [ ] New/changed endpoints (if present) include complete request/response definitions
+- [ ] UI contracts (if present): every unit specifies props/state/events; every page covers Normal/Loading/Empty/Error/Edge-case states
+- [ ] Data structures align across the contract (frontend field names/types match backend response)
+- [ ] Performance requirements are quantified where applicable (P95/P99 latency, QPS)
 - [ ] No placeholders (TBD, TODO, "decide later," "fill in later")
 
 ### Design Soundness
 
-- [ ] Service boundaries are clear (what this service does and doesn't do)
+- [ ] Repository boundaries are clear (what this repository does and doesn't do)
 - [ ] Design decisions explain why, not just what
 - [ ] Assumptions are stated explicitly
-- [ ] No unjustified complexity (a new framework, middleware, or abstraction layer needs a clear reason)
+- [ ] No unjustified complexity (a new framework, middleware, library, or abstraction layer needs a clear reason)
 - [ ] Scope stays within the requirement — no "while we're at it" refactors
-- [ ] Covers every PRD feature with no unauthorized scope reduction (phased delivery, P0-only, MVP, simplified version); any scope adjustment records the user's explicit instruction
+- [ ] Covers every PRD feature/page with no unauthorized scope reduction (phased delivery, P0-only, MVP, simplified version); any scope adjustment records the user's explicit instruction
 
 ### Operability
 
-- [ ] Compatibility plan is explicit (staged rollout / rollback steps)
+- [ ] Compatibility plan is explicit (staged rollout / rollback steps / version compatibility)
 - [ ] External dependencies are named (system, integration method)
-- [ ] Effort is broken down by module, with dependencies noted
-
-## Frontend Proposal Checklist
-
-> Applies to Web, iOS, Android, and Flutter alike, using the same checklist as backend; adapt terminology to the stack (component / view / widget, page / screen / route). Platform-specific rules live in the stack guardrails (`../ss-guardrails/web.md`, `ios.md`, `android.md`, `flutter.md`).
-
-- [ ] UI architecture is clear (component/view/widget tree, responsibility boundaries, reuse strategy)
-- [ ] Each UI unit has defined inputs (props/parameters) and outbound events/callbacks
-- [ ] State management has a defined structure (state fields + types, global vs. local boundary)
-- [ ] Every page/screen covers all states (Normal/Loading/Empty/Error/Edge case)
-- [ ] API/data integration specifies call timing, caching, and failure handling
-- [ ] Data structures align with backend fields (names and types match)
-- [ ] Navigation/routing is explicit (page transitions, auth/permission guards)
-- [ ] Platform-specific risks are assessed (compatibility, performance, bundle size, device support, as relevant)
-- [ ] Covers every PRD page and feature with no unauthorized scope reduction (phased delivery, core-pages-only, MVP, simplified version); any scope adjustment records the user's explicit instruction
+- [ ] Milestones are broken down with dependencies noted
 
 ## Templates
 
@@ -74,6 +65,5 @@ To start a proposal from scratch, use:
 
 | Template | File |
 |----------|------|
-| Backend proposal | [`proposal-template-be.md`](proposal-template-be.md) |
-| Frontend proposal | [`proposal-template-fe.md`](proposal-template-fe.md) |
+| Technical proposal | [`proposal-template.md`](proposal-template.md) |
 | Execution plan | No standalone template — generated by the `ss-build-plan` skill (its Task Template section is built in) |

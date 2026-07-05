@@ -1,6 +1,6 @@
 # Multi-Agent Collaboration
 
-Two skills in super-spec — `ss-multi-agent-coding` and `ss-multi-agent-cr` — get their names from the same idea applied to two different problems: instead of one agent doing everything in a single long-running context, split the work across several agents that each hold a narrower, more focused context, and let a coordinating agent manage the handoffs. `ss-multi-agent-coding` splits *implementation* across parallel task-scoped agents; `ss-multi-agent-cr` splits *review* across independent, dimension-scoped agents. Together they form the coding-and-review step that every workflow in [workflows.md](./workflows.md) calls as a single unit.
+Two skills in super-spec — `ss-coding` and `ss-code-review` — get their names from the same idea applied to two different problems: instead of one agent doing everything in a single long-running context, split the work across several agents that each hold a narrower, more focused context, and let a coordinating agent manage the handoffs. `ss-coding` splits *implementation* across parallel task-scoped agents; `ss-code-review` splits *review* across independent, dimension-scoped agents. Together they form the coding-and-review step that every workflow in [workflows.md](./workflows.md) calls as a single unit.
 
 ## Why Split the Work
 
@@ -19,7 +19,7 @@ sequenceDiagram
     participant O as Orchestrator
     participant I1 as Implementer (Task 1)
     participant I2 as Implementer (Task 2)
-    participant R as ss-multi-agent-cr
+    participant R as ss-code-review
 
     O->>I1: Dispatch (full task text, scope, specs)
     O->>I2: Dispatch (full task text, scope, specs)
@@ -39,7 +39,7 @@ sequenceDiagram
     end
 ```
 
-## `ss-multi-agent-coding`: Parallel TDD Implementation
+## `ss-coding`: Parallel TDD Implementation
 
 ### Specs and Living-Spec Discovery
 
@@ -78,7 +78,7 @@ Checking off a task's checkbox in the plan file the moment it completes does dou
 
 ## Role Prompt Templates
 
-Every implementer dispatch and every reviewer dispatch follows the same prompt shape, kept as a shared template in `skills/_references/` rather than rewritten inline each time a skill needs one. `implementer-prompt.md` is the coding side of this; `ss-multi-agent-cr` carries the equivalent structure for each reviewer role it dispatches. The shared shape exists because the zero-context assumption above imposes the same requirements on every dispatch, no matter which skill is doing the dispatching:
+Every implementer dispatch and every reviewer dispatch follows the same prompt shape, kept as a shared template in `skills/_references/` rather than rewritten inline each time a skill needs one. `implementer-prompt.md` is the coding side of this; `ss-code-review` carries the equivalent structure for each reviewer role it dispatches. The shared shape exists because the zero-context assumption above imposes the same requirements on every dispatch, no matter which skill is doing the dispatching:
 
 - **The full task or diff, pasted in** — never a path for the subagent to go read itself.
 - **Scene-setting context** — where this piece fits in the larger plan or change, so the agent isn't just executing in a vacuum.
@@ -89,7 +89,7 @@ Every implementer dispatch and every reviewer dispatch follows the same prompt s
 
 Centralizing the template means a change to, say, the escalation ladder or the self-review checklist gets picked up by every skill that dispatches that role, instead of having to be hunted down and edited in three places that have already started to drift from each other.
 
-## `ss-multi-agent-cr`: Multi-Dimensional Parallel Review
+## `ss-code-review`: Multi-Dimensional Parallel Review
 
 Where the coding skill splits work by *task*, the review skill splits it by *dimension* — several agents look at the same diff through different lenses, in total isolation from one another:
 
@@ -124,7 +124,7 @@ The spec-compliance reviewers don't go looking for rules on their own — the re
 
 ## The Fix Loop
 
-When the verdict isn't clean, `ss-multi-agent-cr` doesn't just hand back prose — in post-coding mode it returns a structured, machine-parseable finding list: each entry carries a severity, which reviewer found it, the affected files, and a task hint the coding orchestrator uses to route the fix to the implementer who owns that area, rather than re-dispatching everyone. The coding skill re-dispatches only the implementers a finding actually maps to, re-runs tests, and re-invokes the review — bounded to a small number of cycles internally, on top of which the calling workflow keeps its own separate ceiling (see [workflows.md](./workflows.md)) since this loop is the same one workflows drive from the outside.
+When the verdict isn't clean, `ss-code-review` doesn't just hand back prose — in post-coding mode it returns a structured, machine-parseable finding list: each entry carries a severity, which reviewer found it, the affected files, and a task hint the coding orchestrator uses to route the fix to the implementer who owns that area, rather than re-dispatching everyone. The coding skill re-dispatches only the implementers a finding actually maps to, re-runs tests, and re-invokes the review — bounded to a small number of cycles internally, on top of which the calling workflow keeps its own separate ceiling (see [workflows.md](./workflows.md)) since this loop is the same one workflows drive from the outside.
 
 ## Model Selection
 
@@ -136,7 +136,7 @@ Not every implementer needs the same amount of reasoning power, and paying for m
 | Multi-file change, some integration work | Mid tier |
 | Architectural judgment, broad codebase context | Strongest tier |
 
-Two things override the initial pick regardless of the signal that suggested it: a task touching four or more files gets upgraded before dispatch, and a `BLOCKED` report on retry gets upgraded rather than retried on the same tier — repeating a task on the model that just failed it, unchanged, isn't a fix. The integration reviewer in `ss-multi-agent-cr` always runs on the strongest tier regardless of the rest of the review's sizing, since judging whether independently-built pieces cohere needs the broadest context window of any role in either skill.
+Two things override the initial pick regardless of the signal that suggested it: a task touching four or more files gets upgraded before dispatch, and a `BLOCKED` report on retry gets upgraded rather than retried on the same tier — repeating a task on the model that just failed it, unchanged, isn't a fix. The integration reviewer in `ss-code-review` always runs on the strongest tier regardless of the rest of the review's sizing, since judging whether independently-built pieces cohere needs the broadest context window of any role in either skill.
 
 ## Anti-Patterns
 
@@ -152,4 +152,4 @@ Two things override the initial pick regardless of the signal that suggested it:
 
 ## Where This Fits
 
-From a workflow's point of view, `ss-multi-agent-coding` and its internal call into `ss-multi-agent-cr` are one opaque step: hand it a plan, get back either a clean verdict or a list of findings to triage. Everything in this document — task splitting, the shared prompt templates, dimension-scoped review, guardrails-bound findings — is what makes that single step trustworthy enough for a workflow to treat it as a black box and move straight to opening a PR when it comes back clean.
+From a workflow's point of view, `ss-coding` and its internal call into `ss-code-review` are one opaque step: hand it a plan, get back either a clean verdict or a list of findings to triage. Everything in this document — task splitting, the shared prompt templates, dimension-scoped review, guardrails-bound findings — is what makes that single step trustworthy enough for a workflow to treat it as a black box and move straight to opening a PR when it comes back clean.

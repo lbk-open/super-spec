@@ -80,7 +80,7 @@ category — unhandled failure — different syntax.
 flowchart TD
     Core["core.md<br/>(cross-language: input validation,<br/>secrets, exception handling, test gate)"]
     Lang["&lt;lang&gt;.md<br/>(same categories, that stack's idiom)"]
-    Skill["a skill writing or reviewing code<br/>(e.g., ss-multi-agent-coding, ss-multi-agent-cr)"]
+    Skill["a skill writing or reviewing code<br/>(e.g., ss-coding, ss-code-review)"]
 
     Core --> Skill
     Lang --> Skill
@@ -116,8 +116,8 @@ oversight, for three reasons:
 - **No intrusion.** super-spec's skills, guardrails included, don't write
   vendor files into someone else's repository. What skills do create are the
   user's own work products — the `openspec/` directory the spec skills manage,
-  the proposals and plans a user asks for, an `APPLICATION.md` environment
-  map — and anything that touches a project-owned file such as `AGENTS.md`
+  the proposals and plans a user asks
+  for — and anything that touches a project-owned file such as `AGENTS.md`
   happens only with the user's explicit consent (see
   [architecture.md](./architecture.md#skill-catalog)).
 - **One upgrade point.** Update `core.md` or a per-language file once, and

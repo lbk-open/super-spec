@@ -119,7 +119,7 @@ anything unresolvable is asked about, never guessed.
 1. **Pre-flight and repo location.**
 2. **Planning stage** *(only when the input is not a master plan)* — run in this session, since
    planning needs the global view and no process nesting is involved:
-   1. For large requirements, draft a proposal with `ss-write-proposal-be`/`ss-write-proposal-fe`
+   1. For large requirements, draft a proposal with `ss-proposal`
       (with its own approval gate, skippable via skip-gates). The proposal's repo list feeds the
       master plan.
    2. Run `ss-build-plan` — its scope check detects the multi-repo span and produces the **master

@@ -80,7 +80,7 @@ sibling relative paths (`../ss-guardrails/core.md`, `../_references/<file>.md`);
 **Verify:**
 
 ```bash
-ls "$TARGET" | grep -c '^ss-'     # expected: 23
+ls "$TARGET" | grep -c '^ss-'     # expected: 19
 test -f "$TARGET/ss-guardrails/core.md" && test -d "$TARGET/_references" && echo "layout OK"
 ```
 
@@ -88,7 +88,7 @@ If OpenCode is among the targets, you can additionally confirm discovery
 (run from any git repository):
 
 ```bash
-opencode debug skill 2>/dev/null | grep -o '"name": *"ss-[a-z-]*"' | sort -u | wc -l   # expected: 23
+opencode debug skill 2>/dev/null | grep -o '"name": *"ss-[a-z-]*"' | sort -u | wc -l   # expected: 19
 ```
 
 Notes per platform — nothing extra to do, just context:

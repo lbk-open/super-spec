@@ -9,7 +9,7 @@ Finalize development work once coding and review are done: run pre-flight checks
 
 **Core principle:** archive specs → verify → clean → rebase → verify again → ship. Never open a PR/MR with failing tests, debug artifacts, unresolved conflicts, or an unarchived delta spec. Avoid redundant test runs — if a prior coding step already verified tests at the current commit, trust that result.
 
-**This is the last step of a development workflow.** It assumes implementation is complete (e.g., via the `ss-multi-agent-coding` skill or manual work) and review is done (e.g., via the `ss-multi-agent-cr` skill or manual review), with all review issues addressed.
+**This is the last step of a development workflow.** It assumes implementation is complete (e.g., via the `ss-coding` skill or manual work) and review is done (e.g., via the `ss-code-review` skill or manual review), with all review issues addressed.
 
 ## Inputs
 

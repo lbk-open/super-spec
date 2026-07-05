@@ -1,11 +1,11 @@
 ---
-name: ss-multi-agent-coding
-description: Use when an implementation plan (or a plan-shaped requirement) needs to be executed as parallel, test-driven development across multiple subagents, ending in one comprehensive review pass. Reads the plan, dispatches implementer subagents by parallel group, tracks task status and git commits, enforces scope and full-delivery rules, hands off review to the ss-multi-agent-cr skill, and reports a human acceptance checklist.
+name: ss-coding
+description: Use when an implementation plan (or a plan-shaped requirement) needs to be executed as parallel, test-driven development across multiple subagents, ending in one comprehensive review pass. Reads the plan, dispatches implementer subagents by parallel group, tracks task status and git commits, enforces scope and full-delivery rules, hands off review to the ss-code-review skill, and reports a human acceptance checklist.
 ---
 
 # Multi-Agent Parallel TDD Development
 
-Execute an implementation plan by dispatching multiple subagents in parallel, each following test-driven development, then hand off to the `ss-multi-agent-cr` skill for one comprehensive review pass once every task passes its tests.
+Execute an implementation plan by dispatching multiple subagents in parallel, each following test-driven development, then hand off to the `ss-code-review` skill for one comprehensive review pass once every task passes its tests.
 
 **Core architecture:** the orchestrator (you) never writes code. You read the plan, dispatch subagents, track progress, and collect results. All code is written by implementer subagents.
 
@@ -25,7 +25,7 @@ If none of these is supplied, ask the user for one before proceeding.
 Violating any of these means stop and escalate to the user:
 
 1. **The orchestrator never writes code.** You dispatch, track, and review status. You never directly edit source files. (Non-source edits — updating plan checkboxes, correcting plan text — are fine.)
-2. **Review is delegated to `ss-multi-agent-cr`.** Once all tasks complete and tests pass, invoke it in post-coding mode. Do not dispatch your own per-task reviewers.
+2. **Review is delegated to `ss-code-review`.** Once all tasks complete and tests pass, invoke it in post-coding mode. Do not dispatch your own per-task reviewers.
 3. **Continuous execution.** Don't pause between tasks to ask "should I continue?" Run until every task is done or blocked.
 4. **Respect parallel boundaries.** Subagents in the same parallel group may run concurrently; subagents in different groups must run sequentially.
 5. **No file conflicts.** Parallel subagents must never modify the same file. If the plan has parallel tasks touching the same file, run them sequentially instead.
@@ -76,7 +76,7 @@ digraph input_routing {
 When the plan has two tasks or fewer, skip the full parallel pipeline and execute directly:
 1. Dispatch a single implementer subagent per task (sequentially).
 2. Run the tests.
-3. Invoke `ss-multi-agent-cr` in post-coding mode (it skips Integration Review for small scope).
+3. Invoke `ss-code-review` in post-coding mode (it skips Integration Review for small scope).
 4. Handle any review feedback.
 5. Report.
 
@@ -135,7 +135,7 @@ digraph process {
     "Pause and correct plan" [shape=box];
     "Full test suite" [shape=diamond];
     "Fix failing tests" [shape=box];
-    "Comprehensive review (ss-multi-agent-cr)" [shape=box];
+    "Comprehensive review (ss-code-review)" [shape=box];
     "Review verdict" [shape=diamond];
     "Fix review issues" [shape=box];
     "Report to user" [shape=box];
@@ -152,11 +152,11 @@ digraph process {
     "Plan issue?" -> "Pause and correct plan" [label="yes"];
     "Plan issue?" -> "More groups remain?" [label="no"];
     "Pause and correct plan" -> "More groups remain?";
-    "Full test suite" -> "Comprehensive review (ss-multi-agent-cr)" [label="pass"];
+    "Full test suite" -> "Comprehensive review (ss-code-review)" [label="pass"];
     "Full test suite" -> "Fix failing tests" [label="fail"];
     "Fix failing tests" -> "Full test suite" [label="retry (max 3)"];
     "Fix failing tests" -> "Report to user" [label="3 retries failed"];
-    "Comprehensive review (ss-multi-agent-cr)" -> "Review verdict";
+    "Comprehensive review (ss-code-review)" -> "Review verdict";
     "Review verdict" -> "Report to user" [label="APPROVED"];
     "Review verdict" -> "Fix review issues" [label="NEEDS_CHANGES / CRITICAL_ISSUES"];
     "Fix review issues" -> "Full test suite" [label="retry (max 2 cycles)"];
@@ -191,7 +191,7 @@ For every task, whether parallel or sequential:
    - `PLAN_ISSUE` → pause execution (see "Plan Correction").
    - `CONFLICT` → resolve sequentially (see "Git Strategy").
 
-There is no per-task review — code review happens collectively via `ss-multi-agent-cr` in post-coding mode after all tasks complete and tests pass (Step 6). This avoids redundant per-task reviews and enables cross-task integration analysis.
+There is no per-task review — code review happens collectively via `ss-code-review` in post-coding mode after all tasks complete and tests pass (Step 6). This avoids redundant per-task reviews and enables cross-task integration analysis.
 
 Implementer self-checks are still required. Each implementer must follow TDD (write a failing test, implement, verify it passes), run the lint command on changed files, self-verify against specs before reporting `DONE`, and include test output in its status report.
 
@@ -221,7 +221,7 @@ Also run `LINT_COMMAND` if one was discovered — lint failures follow the same 
 
 ### Step 5.5: Spec Compliance Gate
 
-Run this after tests/lint pass and before `ss-multi-agent-cr`:
+Run this after tests/lint pass and before `ss-code-review`:
 1. Check for delta specs under `openspec/changes/<change-id>/specs/`.
 2. If none exist, decide whether this is zero-spec mode: auto-allow only when the changed files are limited to docs, comments, CI/build configuration, dependency metadata, or tests. Otherwise stop with: "This change affects system capability but has no delta spec. Run the `ss-write-spec` skill to add one, then continue — or explicitly confirm this is a zero-spec change."
 3. If a delta exists, verify coverage: for every Requirement and every Scenario, find an automated test covering its WHEN/THEN behavior (test names should map to Requirement/Scenario names where practical). If coverage is missing, report `NEEDS_TEST` with the uncovered scenarios listed.
@@ -232,17 +232,17 @@ This gate validates spec coverage only — it doesn't rewrite or invent specs du
 
 ### Step 5.6: Full-Scope Gate
 
-Run this after the Spec Compliance Gate and before `ss-multi-agent-cr`. It verifies nothing was silently narrowed during execution:
+Run this after the Spec Compliance Gate and before `ss-code-review`. It verifies nothing was silently narrowed during execution:
 1. **Task completeness** — every task in the plan is checked off, and a task may only be checked off once all of its steps are done. A stubbed or partially implemented task stays unchecked and blocks this gate.
 2. **Scope-reduction scan** — grep the newly added/modified code for deferral markers: `TODO`, `FIXME`, "for now", "simplified", "not implemented", "placeholder", "stub", and hardcoded values standing in for real logic. Each hit is a judgment call, not an automatic failure: a genuine deferral must be completed before proceeding; a confirmed false positive (a UI `placeholder=` attribute, a test double, deliberate fail-fast on an unsupported path, ordinary comment phrasing) gets dismissed with a one-line reason in the report.
 3. **On failure** — re-dispatch the affected implementers to finish the work. Don't rationalize a gap as "MVP scope," "phase two," "optional," or "nice to have" — re-scoping decisions belong to the user alone.
-4. **Exception** — scope the user explicitly cut, deferred, or accepted as blocked is exempt. Append each item to a "User-Confirmed Scope Adjustments" section in the plan file (citing the user's instruction), then repeat it in the final report. The plan file is the authoritative record — `ss-multi-agent-cr` and later stages read the authorization from there, not from chat output.
+4. **Exception** — scope the user explicitly cut, deferred, or accepted as blocked is exempt. Append each item to a "User-Confirmed Scope Adjustments" section in the plan file (citing the user's instruction), then repeat it in the final report. The plan file is the authoritative record — `ss-code-review` and later stages read the authorization from there, not from chat output.
 
 **Downstream contract:** the final report includes `TEST_VERIFIED_SHA`. When `ss-create-pr` runs immediately after this skill with no new commits and a clean working tree, it can detect this SHA and skip its own pre-flight test suite. The full test suite is only re-run there when new commits were added after this step, a rebase introduced changes, or this skill wasn't used at all (standalone `ss-create-pr`).
 
 ### Step 6: Comprehensive Review
 
-After tests pass, invoke `ss-multi-agent-cr` in post-coding mode, providing:
+After tests pass, invoke `ss-code-review` in post-coding mode, providing:
 - the plan file path (goal, architecture, task list);
 - the task-to-file mapping (which task changed which files);
 - the current branch diff against the target branch.
@@ -255,11 +255,11 @@ Handle the review verdict:
 | `NEEDS_CHANGES` / `CRITICAL_ISSUES` | parse `FIX_LIST`, re-dispatch the affected implementers, re-test, re-review |
 
 Review-fix loop (max 2 cycles):
-1. Parse `FIX_LIST` from the `ss-multi-agent-cr` report.
+1. Parse `FIX_LIST` from the `ss-code-review` report.
 2. Group fixes by `task_hint` and route each to the correct implementer.
 3. Re-dispatch the affected implementers with fix instructions.
 4. Re-run `TEST_COMMAND` once all fixes land.
-5. Re-invoke `ss-multi-agent-cr` in post-coding mode to verify.
+5. Re-invoke `ss-code-review` in post-coding mode to verify.
 6. Maximum 2 review-fix cycles — if still failing after 2, report to the user with the remaining issues.
 
 Each cycle should converge; if two cycles can't resolve it, the issue is likely architectural and needs human input.
@@ -294,7 +294,7 @@ Only list items automated tests cannot verify. If everything is covered by tests
 | Implementer | multi-file, integration work | a mid-tier model |
 | Implementer | architecture, broad context | your most capable model |
 
-Upgrade signals: a task touches 4+ files → upgrade; `BLOCKED` returned → retry with a stronger model. Review model selection is managed by `ss-multi-agent-cr` — see that skill for details.
+Upgrade signals: a task touches 4+ files → upgrade; `BLOCKED` returned → retry with a stronger model. Review model selection is managed by `ss-code-review` — see that skill for details.
 
 ## Handling Subagent Status
 
@@ -312,7 +312,7 @@ Never ignore `BLOCKED`, `PLAN_ISSUE`, or `CONFLICT` — something must change be
 Subagent prompts live in `../_references/`:
 - `implementer-prompt.md` — the implementer subagent prompt.
 
-Review prompts are managed by `ss-multi-agent-cr` — this skill no longer dispatches its own reviewer subagents; the earlier per-task review roles have been absorbed into `ss-multi-agent-cr`'s General CR, compliance, and Integration Review agents.
+Review prompts are managed by `ss-code-review` — this skill no longer dispatches its own reviewer subagents; the earlier per-task review roles have been absorbed into `ss-code-review`'s General CR, compliance, and Integration Review agents.
 
 When dispatching implementers, you must:
 - paste the full task text into the prompt — never make a subagent read the plan file itself;
@@ -368,7 +368,7 @@ mvn test → 42 passed, 0 failed ✓
 mvn checkstyle:check → 0 violations ✓
 TEST_VERIFIED_SHA: abc123def456
 
---- Comprehensive review (ss-multi-agent-cr, post-coding mode) ---
+--- Comprehensive review (ss-code-review, post-coding mode) ---
 Dispatched: General CR + Global Compliance + Stack Compliance + Integration Review
   General CR: 1 issue (IMPORTANT: missing null check on callback.orderId, confidence 92)
   Global Compliance: 0 issues
@@ -381,7 +381,7 @@ Verdict: NEEDS_CHANGES (1 issue in FIX_LIST)
 FIX_LIST → Task 1 (PaymentService): null check on callback.orderId
 Re-dispatch Task 1 implementer with the fix → DONE
 Re-run: mvn test → 42 passed ✓
-Re-invoke ss-multi-agent-cr → APPROVED
+Re-invoke ss-code-review → APPROVED
 
 --- Report ---
 Tasks: 5/5 complete
@@ -401,23 +401,23 @@ Files: 8 (3 created, 5 modified)
 | Anti-pattern | Why it's harmful | Correct approach |
 |---|---|---|
 | Orchestrator edits code directly | pollutes context, loses review | always dispatch a subagent |
-| Dispatching per-task reviewer subagents | redundant with `ss-multi-agent-cr`, wastes time | let implementers self-check; review collectively at the end |
+| Dispatching per-task reviewer subagents | redundant with `ss-code-review`, wastes time | let implementers self-check; review collectively at the end |
 | Dispatching 6+ parallel subagents | resource contention, conflicts | max 5 concurrent |
 | Making a subagent read the plan file | wastes context, may misparse | paste the full task text |
 | Retrying without changing anything | definition of insanity | change context/model/scope first |
-| Skipping the `ss-multi-agent-cr` invocation | issues compound, no external review | always invoke it after tests pass |
+| Skipping the `ss-code-review` invocation | issues compound, no external review | always invoke it after tests pass |
 | Pausing between tasks to ask the user | wastes time | continuous execution until done/blocked |
 | Forcing through a known plan error | produces wrong code | pause, correct, continue |
 | Presenting stubs/partial work as done | user believes the feature is complete when it isn't | Full-Scope Gate: finish the work, or stop and report the blocker |
 | Re-scoping the plan mid-execution ("do P0 only," "leave the rest for later") | unauthorized partial delivery | execute the full plan; scope decisions belong to the user |
 | Implementing on main/master | no rollback path | must be on a feature branch |
-| Running `ss-multi-agent-cr` before the test suite | reviewing code that may not compile or pass | test first, then review |
+| Running `ss-code-review` before the test suite | reviewing code that may not compile or pass | test first, then review |
 | Review-fix loop past 2 cycles | diminishing returns, needs human input | escalate to the user after 2 cycles |
 
 ## Red Flags — Stop
 
 - About to edit a source file yourself → dispatch a subagent instead.
-- About to dispatch a per-task reviewer subagent → review is handled by `ss-multi-agent-cr` at the end.
+- About to dispatch a per-task reviewer subagent → review is handled by `ss-code-review` at the end.
 - Same error 3 times (same test, same file:line, same exception origin) → escalate to the user.
 - A subagent modified files outside its task scope → reject and re-dispatch.
 - About to mark a task complete with stubbed/simplified/"for now" logic → finish it, or report `BLOCKED`.
@@ -432,6 +432,6 @@ Files: 8 (3 created, 5 modified)
 
 ## Examples
 
-- `ss-multi-agent-coding docs/plans/2026-05-10-user-payment.md`
-- `ss-multi-agent-coding https://wiki.example.com/requirements/user-payment`
-- `ss-multi-agent-coding "Implement user login: support SMS verification codes and QR-code login"`
+- `ss-coding docs/plans/2026-05-10-user-payment.md`
+- `ss-coding https://wiki.example.com/requirements/user-payment`
+- `ss-coding "Implement user login: support SMS verification codes and QR-code login"`

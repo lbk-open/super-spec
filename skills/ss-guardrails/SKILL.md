@@ -1,6 +1,6 @@
 ---
 name: ss-guardrails
-description: A library of safety, code-quality, and anti-mistake checklists that other ss-* skills consult on demand while writing or reviewing code. Not invoked directly by users — skills like ss-coding-workflow, ss-multi-agent-cr, and ss-multi-agent-coding read core.md plus the relevant language file before generating or grading code.
+description: A library of safety, code-quality, and anti-mistake checklists that other ss-* skills consult on demand while writing or reviewing code. Not invoked directly by users — skills like ss-coding-workflow, ss-code-review, and ss-coding read core.md plus the relevant language file before generating or grading code.
 ---
 
 # Guardrails

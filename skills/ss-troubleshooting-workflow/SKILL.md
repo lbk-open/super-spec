@@ -9,15 +9,15 @@ Chains the existing `ss-*` skills into a single diagnose-fix-deliver flow:
 
 ```
 ss-inspect → [Gate: root-cause confirmation] → ss-create-branch
-→ ss-build-plan → ss-multi-agent-coding (built-in review) → review-acceptance loop → ss-create-pr
+→ ss-build-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code or drafts a plan itself. It
 calls the other skills in order, pauses at the gates below, passes each step's output to the
 next, and reports progress.
 
-> **Review is not run twice.** `ss-multi-agent-coding` already enforces a post-coding review
-> internally and returns a verdict. This workflow never invokes `ss-multi-agent-cr` separately —
+> **Review is not run twice.** `ss-coding` already enforces a post-coding review
+> internally and returns a verdict. This workflow never invokes `ss-code-review` separately —
 > the review-acceptance loop below is driven entirely by that verdict.
 
 Unlike `ss-feature-workflow`, the root-cause report from `ss-inspect` replaces the proposal, and
@@ -122,7 +122,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 | `ss-inspect` | A root-cause conclusion was already produced this session, or `docs/troubleshooting/` has a recent (within 24h) report | List it and ask whether to reuse (autonomous mode reuses the most recent) |
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this issue's branch | Reuse the branch; switch into the worktree if applicable |
 | `ss-build-plan` | `docs/plans/` has a structured plan | Reuse, skip |
-| `ss-multi-agent-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
+| `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
 
 ## Process
@@ -141,7 +141,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
    `fix/`. Forward the worktree preference. Record the branch name and worktree path.
 5. **`ss-build-plan`** — draft the fix plan from the root-cause conclusion (including any spec
    delta). If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
-6. **`ss-multi-agent-coding`** — execute the fix plan. It already covers TDD and test
+6. **`ss-coding`** — execute the fix plan. It already covers TDD and test
    verification, and enforces its own post-coding review before returning a verdict.
 7. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
    remaining findings are judged invalid.
@@ -152,7 +152,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 
 ## Review-Acceptance Loop
 
-After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate and does not pause:
+After `ss-coding` returns its verdict, this workflow sets no gate and does not pause:
 
 1. Read the verdict.
 2. No unresolved findings (approved) → go to delivery.
@@ -164,11 +164,11 @@ After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate an
      "simplified for now") must never be judged invalid as "by design" or "out of scope" unless
      the user explicitly approved that scope adjustment earlier — cite that approval.
 4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-multi-agent-coding` again for just those findings → back to
+5. Valid findings remain → call `ss-coding` again for just those findings → back to
    step 1.
 
 **Convergence protection:**
-- Cap workflow-level rounds at 3, independent of `ss-multi-agent-coding`'s internal rounds; if
+- Cap workflow-level rounds at 3, independent of `ss-coding`'s internal rounds; if
   exceeded, escalate with the latest verdict plus the fixed/unresolved lists.
 - Track recurrence at the workflow level: the same finding judged valid across 2 consecutive
   workflow rounds after being "fixed" is a stall — escalate.

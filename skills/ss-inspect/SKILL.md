@@ -60,7 +60,7 @@ Runtime investigation **does** need environment access when:
 
 If you need environment access: check whether `APPLICATION.md` exists at the project root.
 - If yes, read it for server addresses, configuration-center access, middleware endpoints, and observability tooling.
-- If no, run the `ss-explore-environment` skill first. You cannot troubleshoot a runtime issue you have no access into.
+- If no, stop and ask the user for environment access details — or an environment map such as an `APPLICATION.md` if the project keeps one. You cannot troubleshoot a runtime issue you have no access into.
 
 ## The six phases
 
@@ -147,7 +147,7 @@ Only once the hypothesis is verified with HIGH confidence:
 
 1. **Choose the fix type:** immediate mitigation (config change, rollback, feature-flag toggle) to stop the bleeding, or a root-cause fix (permanent code change).
 2. **For immediate mitigation:** apply the smallest change that stops the impact, document what changed and why, and open a follow-up task for the permanent fix.
-3. **For a root-cause fix:** write a failing test that reproduces the issue, implement the fix (delegate complex fixes to the `ss-multi-agent-coding` skill), and verify: test passes, metrics recover, logs are clean.
+3. **For a root-cause fix:** write a failing test that reproduces the issue, implement the fix (delegate complex fixes to the `ss-coding` skill), and verify: test passes, metrics recover, logs are clean.
 4. **Post-fix verification:** confirm the error rate has dropped, no new errors appear in logs, and traces are clean over the following period.
 
 **Fixing discipline applies throughout:** change one thing at a time; if a fix doesn't work, return to Phase 2 with the new information and form a new hypothesis — never stack a second fix on top of a failed one.
@@ -248,7 +248,7 @@ Before declaring this, double check: did you really check every source, and did 
 | Assume the last deploy caused it | Correlation isn't causation | Check the metrics timeline against the deploy time |
 | Fix the symptom, not the cause | The issue recurs | Trace to root cause via Phase 3 |
 | Skip hypothesis verification | You may be fixing the wrong thing | Phase 5 is mandatory |
-| Investigate without environment access | Can't gather real evidence | Get `ss-explore-environment` output first |
+| Investigate without environment access | Can't gather real evidence | Get environment access details (or an environment map like `APPLICATION.md`) first |
 | Propose a fix at LOW confidence | Wastes time on the wrong fix | Require HIGH confidence (2+ sources) |
 
 ## Stop signs

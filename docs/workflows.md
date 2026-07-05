@@ -30,10 +30,10 @@ All three converge on the same tail: dispatch the coding-and-review step, let it
 
 ```mermaid
 flowchart LR
-    A[ss-create-branch] --> B[ss-write-proposal-be / -fe]
+    A[ss-create-branch] --> B[ss-proposal]
     B --> G{Gate: proposal review}
     G -->|approved| C[ss-build-plan]
-    C --> D[ss-multi-agent-coding<br/>+ built-in review]
+    C --> D[ss-coding<br/>+ built-in review]
     D --> E{Verdict clean?}
     E -->|no, valid findings| D
     E -->|yes| F[ss-create-pr]
@@ -54,7 +54,7 @@ flowchart LR
     A[ss-inspect] --> G{Gate: root-cause review}
     G -->|confirmed| B[ss-create-branch]
     B --> C[ss-build-plan]
-    C --> D[ss-multi-agent-coding<br/>+ built-in review]
+    C --> D[ss-coding<br/>+ built-in review]
     D --> E{Verdict clean?}
     E -->|no, valid findings| D
     E -->|yes| F[ss-create-pr]
@@ -73,7 +73,7 @@ The branch-creation ordering is the one structural difference from feature work:
 ```mermaid
 flowchart LR
     A[Detect input type] --> B[ss-create-branch]
-    B --> C[ss-multi-agent-coding<br/>+ built-in review]
+    B --> C[ss-coding<br/>+ built-in review]
     C --> D{Verdict clean?}
     D -->|no, valid findings| C
     D -->|yes| E[ss-create-pr]
@@ -88,7 +88,7 @@ There is no proposal step and no separate planning step — the input already ca
 
 ## The Coding-and-Review Loop Is One Step, Not Two
 
-All three workflows call a single combined step for implementation: `ss-multi-agent-coding` runs its own review pass internally before returning. A workflow never calls the review skill on its own — doing so on top of a coding step that already reviewed itself would double the review effort and stack two independent retry-limit counters on top of each other, for no benefit. See [multi-agent.md](./multi-agent.md) for how that internal review works.
+All three workflows call a single combined step for implementation: `ss-coding` runs its own review pass internally before returning. A workflow never calls the review skill on its own — doing so on top of a coding step that already reviewed itself would double the review effort and stack two independent retry-limit counters on top of each other, for no benefit. See [multi-agent.md](./multi-agent.md) for how that internal review works.
 
 What the workflow *does* own is what happens with the verdict that step hands back:
 

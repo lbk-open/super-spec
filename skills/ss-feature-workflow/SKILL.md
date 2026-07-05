@@ -8,18 +8,18 @@ description: End-to-end feature delivery — takes a PRD, requirement descriptio
 Chains the existing `ss-*` skills into one requirement-to-delivery pipeline:
 
 ```
-ss-create-branch → ss-write-proposal-be/fe → [Gate: proposal approval]
-→ ss-build-plan → ss-multi-agent-coding (built-in review) → review-acceptance loop → ss-create-pr
+ss-create-branch → ss-proposal → [Gate: proposal approval]
+→ ss-build-plan → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code or drafts a proposal/plan
 itself. It calls the other skills in order, pauses at the gates below, passes each step's output
 to the next, and reports progress. Every step's logic stays owned by its own skill.
 
-> **Review is not run twice.** `ss-multi-agent-coding` already enforces a post-coding review
+> **Review is not run twice.** `ss-coding` already enforces a post-coding review
 > internally (with its own fix rounds) and returns a verdict. This workflow never invokes
-> `ss-multi-agent-cr` separately — the review-acceptance loop below is driven entirely by the
-> verdict `ss-multi-agent-coding` returns.
+> `ss-code-review` separately — the review-acceptance loop below is driven entirely by the
+> verdict `ss-coding` returns.
 
 ## When to Run
 
@@ -94,12 +94,12 @@ Violating any of these means stopping and explaining to the user:
    pausing.
 3. **The proposal-approval gate is on by default** — after the proposal is drafted, pause for
    approval; skip-gates mode skips it.
-4. **No gate for review — run the loop instead** — `ss-multi-agent-coding` has built-in review;
+4. **No gate for review — run the loop instead** — `ss-coding` has built-in review;
    after it returns, if unresolved valid findings remain, automatically re-invoke coding without
    pausing (see "Review-Acceptance Loop"). There is also no gate before delivery.
 5. **Resumable** — on start, probe for existing artifacts and skip completed steps.
 6. **Never relax safety guardrails** — automation flags only affect questions and approvals; they
-   never bypass the hard rules built into `ss-multi-agent-coding` or `ss-create-pr` (repeated-
+   never bypass the hard rules built into `ss-coding` or `ss-create-pr` (repeated-
    failure escalation, scope-overreach rejection, secret detection, force-push confirmation, etc.).
 
 ## Pre-flight Checks
@@ -125,7 +125,7 @@ On start, probe for existing artifacts and skip completed steps:
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this requirement's branch | Reuse the branch; if it lives in a worktree, switch into it |
 | Proposal | `docs/proposals/` has a recent file matching this requirement | Reuse it; if unsure, list candidates and ask (autonomous mode picks the most recent) |
 | `ss-build-plan` | `docs/plans/` has a structured plan (contains task/file sections) | Reuse, skip |
-| `ss-multi-agent-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
+| `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
 
 ## Process
@@ -134,11 +134,9 @@ On start, probe for existing artifacts and skip completed steps:
 2. **`ss-create-branch`** *(full mode only)* — cut the branch from the requirement input; skip in
    lite mode. The branch-type prefix (feat/fix/...) is decided by `ss-create-branch` itself.
    Forward the worktree preference if given. Record the branch name and worktree path (if any).
-3. **Proposal** — decide backend vs. frontend (or both) from the requirement, identifying the
-   concrete platform from the repo's stack conventions when frontend, then call
-   `ss-write-proposal-be` and/or `ss-write-proposal-fe`. If ambiguous, ask; when deciding
-   autonomously, infer from the requirement, defaulting to backend when unclear. Output goes to
-   `docs/proposals/`.
+3. **Proposal** — run `ss-proposal` on the requirement. It produces a stack-neutral,
+   high-level design proposal covering whichever parts of the system the requirement
+   touches. Output goes to `docs/proposals/`.
 4. **Gate: proposal approval** — show the proposal summary and path; pause for **continue /
    revise / abort**, plus **switch to multi-repo workflow** when the repo list has more than one
    entry. Skip-gates mode continues automatically, but if the repo list still has more than one
@@ -147,7 +145,7 @@ On start, probe for existing artifacts and skip completed steps:
    that, suggest refining the proposal separately before restarting the workflow.
 5. **`ss-build-plan`** — generate the execution plan from the proposal (including any delta spec).
    If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
-6. **`ss-multi-agent-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
+6. **`ss-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
    and test verification, and enforces its own post-coding review before returning a verdict.
 7. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
    remaining findings are judged invalid.
@@ -158,7 +156,7 @@ On start, probe for existing artifacts and skip completed steps:
 
 ## Review-Acceptance Loop
 
-After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate and does not pause —
+After `ss-coding` returns its verdict, this workflow sets no gate and does not pause —
 it drives acceptance automatically:
 
 1. Read the verdict.
@@ -172,16 +170,16 @@ it drives acceptance automatically:
      the user explicitly approved that scope adjustment earlier — cite that approval in the
      judgment record.
 4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-multi-agent-coding` again for just those findings (it re-codes
+5. Valid findings remain → call `ss-coding` again for just those findings (it re-codes
    and reruns review internally) → back to step 1.
 
 **Convergence protection:**
-- Cap workflow-level rounds at 3 (independent of `ss-multi-agent-coding`'s internal rounds). If
+- Cap workflow-level rounds at 3 (independent of `ss-coding`'s internal rounds). If
   exceeded with valid findings still unresolved, stop and escalate with the latest verdict plus
   the fixed/unresolved lists.
 - Track recurrence at the workflow level: if the same finding is still judged valid after being
   "fixed" across 2 consecutive workflow rounds, treat it as a stall and escalate. Don't rely on
-  `ss-multi-agent-coding`'s internal counter — it resets every call.
+  `ss-coding`'s internal counter — it resets every call.
 - Record every "invalid" judgment and its reason in the execution summary, for the reviewer to
   double-check. Never force a finding to "invalid" just to pass.
 

@@ -109,7 +109,7 @@ super-spec/
 from, or duplicated into, a platform-specific format. `skills/ss-guardrails/` and
 `skills/_references/` are not standalone workflows — they're shared material that
 other skills pull in at prompt time via relative paths (`../ss-guardrails/core.md`,
-`../_references/proposal-template-be.md`). `docs/` is design documentation for
+`../_references/proposal-template.md`). `docs/` is design documentation for
 humans; it has no runtime role.
 
 ## Skill Catalog
@@ -120,11 +120,11 @@ group into six categories:
 | Category | Skills | What they do |
 |---|---|---|
 | **Spec** | `ss-write-spec`, `ss-show-spec`, `ss-list-changes`, `ss-trace-spec`, `ss-archive`, `ss-reverse-spec` | Maintain living specs as an [OpenSpec](https://github.com/Fission-AI/OpenSpec)-style delta workflow: draft a change, inspect current capability specs and their history, fold an approved change back into the baseline, or derive a baseline from existing (brownfield) code |
-| **Workflow** | `ss-build-api`, `ss-build-plan`, `ss-coding-workflow`, `ss-feature-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` | Turn a requirement into an executable plan (API contract, task breakdown) and orchestrate the end-to-end paths — feature delivery, bug fix, plain coding change, or a multi-repository rollout — through branch, code, review, and PR |
-| **Multi-agent** | `ss-multi-agent-coding`, `ss-multi-agent-cr` | Fan work out across parallel subagents: test-driven implementation split by independent task, and code review split by concern (security, standards, error handling, performance, test coverage) |
-| **Proposal** | `ss-write-proposal-be`, `ss-write-proposal-fe` | Turn a requirement plus an API contract (and, for frontend, a design reference) into a structured technical proposal before anyone writes code |
+| **Workflow** | `ss-build-plan`, `ss-coding-workflow`, `ss-feature-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` | Turn a requirement into an executable task plan and orchestrate the end-to-end paths — feature delivery, bug fix, plain coding change, or a multi-repository rollout — through branch, code, review, and PR |
+| **Multi-agent** | `ss-coding`, `ss-code-review` | Fan work out across parallel subagents: test-driven implementation split by independent task, and code review split by concern (security, standards, error handling, performance, test coverage) |
+| **Proposal** | `ss-proposal` | Turn a requirement into a structured, high-level technical proposal — architecture, interfaces, trade-offs — before anyone writes code |
 | **Git** | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` | Handle the git mechanics: cut a branch (with an optional isolated worktree), open a pull request once quality gates pass, and tear down the branch/worktree afterward |
-| **Diagnostics** | `ss-inspect`, `ss-explore-environment`, `ss-feedback` | Root-cause a live issue through a staged, evidence-driven process; map an application's runtime environment before the first investigation; file feedback about the toolkit itself |
+| **Diagnostics** | `ss-inspect` | Root-cause a live issue through a staged, evidence-driven process |
 
 `ss-guardrails` sits outside this table on purpose — it isn't something you invoke
 as a task, it's the shared rulebook the other skills read from. See the next

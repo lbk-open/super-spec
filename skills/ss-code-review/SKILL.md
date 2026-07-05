@@ -1,6 +1,6 @@
 ---
-name: ss-multi-agent-cr
-description: Use for a comprehensive code review of a diff — standalone (a pull request, a SHA range, or the current branch) or as the post-coding review step invoked by ss-multi-agent-coding. Dispatches independent subagents for general code quality, coding-standard compliance (global, stack, and project level, plus OpenSpec compliance when specs are present), and, in post-coding mode with enough scope, a cross-task integration review; then filters by confidence, deduplicates, and produces one consolidated verdict.
+name: ss-code-review
+description: Use for a comprehensive code review of a diff — standalone (a pull request, a SHA range, or the current branch) or as the post-coding review step invoked by ss-coding. Dispatches independent subagents for general code quality, coding-standard compliance (global, stack, and project level, plus OpenSpec compliance when specs are present), and, in post-coding mode with enough scope, a cross-task integration review; then filters by confidence, deduplicates, and produces one consolidated verdict.
 ---
 
 # Multi-Agent Code Review
@@ -16,7 +16,7 @@ Supply one of:
 - an explicit SHA range (`--base <sha> --head <sha>`);
 - nothing, to review the current branch against its upstream merge-base.
 
-For the post-coding mode invoked by `ss-multi-agent-coding`, also supply `--post-coding --plan <plan-file-path>`.
+For the post-coding mode invoked by `ss-coding`, also supply `--post-coding --plan <plan-file-path>`.
 
 If a URL is given, also fetch its title, description, and commit messages for context.
 
@@ -546,19 +546,19 @@ Write the report in the same language as the project's existing docs; default to
 
 ## Post-Coding Mode
 
-When `ss-multi-agent-coding` invokes this skill (rather than a standalone review), it runs in **post-coding mode** with richer context and an extra Integration Review agent.
+When `ss-coding` invokes this skill (rather than a standalone review), it runs in **post-coding mode** with richer context and an extra Integration Review agent.
 
 ### How to Detect Post-Coding Mode
 
-Activated only by the explicit flag: `--post-coding --plan <path>`. If that flag isn't passed, this skill runs in standalone mode even if a plan file happens to exist in the workspace. `ss-multi-agent-coding` always passes this flag explicitly.
+Activated only by the explicit flag: `--post-coding --plan <path>`. If that flag isn't passed, this skill runs in standalone mode even if a plan file happens to exist in the workspace. `ss-coding` always passes this flag explicitly.
 
 ### Additional Inputs in Post-Coding Mode
 
 | Input | Source | Used by |
 |---|---|---|
-| Plan file (goal, architecture, task list) | path passed by `ss-multi-agent-coding` | Integration Review Agent, General CR |
-| Task-to-file mapping | list provided by `ss-multi-agent-coding` | Integration Review Agent, feedback routing |
-| `TEST_COMMAND` result | pass/fail reported by `ss-multi-agent-coding` | included in report context |
+| Plan file (goal, architecture, task list) | path passed by `ss-coding` | Integration Review Agent, General CR |
+| Task-to-file mapping | list provided by `ss-coding` | Integration Review Agent, feedback routing |
+| `TEST_COMMAND` result | pass/fail reported by `ss-coding` | included in report context |
 
 ### What Changes in Post-Coding Mode
 
@@ -567,7 +567,7 @@ Activated only by the explicit flag: `--post-coding --plan <path>`. If that flag
 | Integration Review Agent | not dispatched | dispatched if 3+ tasks or 5+ files |
 | General CR — functional completeness | checks against the PR description only | also checks against plan tasks |
 | Feedback format | human-readable report only | also returns a structured `FIX_LIST` |
-| Verdict escalation | reported to the user | reported to the `ss-multi-agent-coding` orchestrator for its fix loop |
+| Verdict escalation | reported to the user | reported to the `ss-coding` orchestrator for its fix loop |
 
 ### Structured Feedback (post-coding mode only)
 
@@ -595,7 +595,7 @@ When the verdict is `NEEDS_CHANGES` or `CRITICAL_ISSUES`, append a machine-reada
 
 Field definitions: `fix_id` (sequential integer), `severity` (`CRITICAL` | `IMPORTANT`), `source_agent` (which reviewer found it), `files` (always a list, even for one file), `description`, `task_ids` (list, machine-parseable), `task_hint` (optional human-readable routing context).
 
-`ss-multi-agent-coding` uses `FIX_LIST` to route each fix to the right implementer by `task_hint`, re-dispatch only the affected implementers, and re-invoke this skill in post-coding mode for verification (max 2 review cycles).
+`ss-coding` uses `FIX_LIST` to route each fix to the right implementer by `task_hint`, re-dispatch only the affected implementers, and re-invoke this skill in post-coding mode for verification (max 2 review cycles).
 
 ### Post-Coding Mode Execution Flow
 
@@ -653,11 +653,11 @@ digraph postcoding {
 - Subagent dispatch fails or times out → skip it, note it in the report, proceed with the rest.
 - Diff is empty → report "no changes to review" and stop.
 - Post-coding mode with small scope → if 2 tasks/4 files or fewer, skip Integration Review (too small to benefit).
-- Post-coding mode with `NEEDS_CHANGES` → return structured feedback with task-to-fix mapping so `ss-multi-agent-coding` can re-dispatch targeted implementers.
+- Post-coding mode with `NEEDS_CHANGES` → return structured feedback with task-to-fix mapping so `ss-coding` can re-dispatch targeted implementers.
 
 ## Examples
 
-- Standalone, current branch: `ss-multi-agent-cr`
-- Standalone, GitLab MR: `ss-multi-agent-cr --mr https://gitlab.example.com/backend/order-service/-/merge_requests/456`
-- Standalone, explicit SHA range: `ss-multi-agent-cr --base abc123 --head def456`
-- Post-coding (invoked by `ss-multi-agent-coding`, includes Integration Review + FIX_LIST): `ss-multi-agent-cr --post-coding --plan docs/plans/2026-05-10-user-payment.md`
+- Standalone, current branch: `ss-code-review`
+- Standalone, GitLab MR: `ss-code-review --mr https://gitlab.example.com/backend/order-service/-/merge_requests/456`
+- Standalone, explicit SHA range: `ss-code-review --base abc123 --head def456`
+- Post-coding (invoked by `ss-coding`, includes Integration Review + FIX_LIST): `ss-code-review --post-coding --plan docs/plans/2026-05-10-user-payment.md`

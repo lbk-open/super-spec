@@ -8,14 +8,14 @@ description: Executes a ready-made plan or a plain-language change instruction e
 Chains the existing `ss-*` skills into a single execute-and-deliver flow:
 
 ```
-ss-create-branch → ss-multi-agent-coding (built-in review) → review-acceptance loop → ss-create-pr
+ss-create-branch → ss-coding (built-in review) → review-acceptance loop → ss-create-pr
 ```
 
 **Core principle: thin orchestration.** This skill never writes code itself. It calls the other
 skills in order, passes outputs along, and reports progress.
 
-> **Review is not run twice.** `ss-multi-agent-coding` already enforces a post-coding review
-> internally and returns a verdict. This workflow never invokes `ss-multi-agent-cr` separately —
+> **Review is not run twice.** `ss-coding` already enforces a post-coding review
+> internally and returns a verdict. This workflow never invokes `ss-code-review` separately —
 > the review-acceptance loop below is driven entirely by that verdict.
 
 Unlike `ss-feature-workflow`, there is no proposal or planning step here, and no manual gate by
@@ -107,7 +107,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 | Step | Completion check | On hit |
 |------|-------------------|--------|
 | `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this task's branch | Reuse the branch; switch into the worktree if applicable |
-| `ss-multi-agent-coding` | Every task in the input plan is checked off | Skip coding, go straight to the review-acceptance loop |
+| `ss-coding` | Every task in the input plan is checked off | Skip coding, go straight to the review-acceptance loop |
 | `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
 
 ## Process
@@ -119,7 +119,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
      a prefix that matches its nature (refactor → `refactor/`, small feature → `feat/`, small fix
      → `fix/`); ask if ambiguous. Forward the worktree preference. Record the branch name and
      worktree path.
-3. **`ss-multi-agent-coding`** — full execution for a plan input; inline fast mode (handles small,
+3. **`ss-coding`** — full execution for a plan input; inline fast mode (handles small,
    low-file-count changes without a full plan) for a change instruction. It already covers TDD and
    test verification, and enforces its own post-coding review before returning a verdict.
 4. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
@@ -151,7 +151,7 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 
 ## Review-Acceptance Loop
 
-After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate and does not pause:
+After `ss-coding` returns its verdict, this workflow sets no gate and does not pause:
 
 1. Read the verdict.
 2. No unresolved findings (approved) → go to delivery.
@@ -163,15 +163,15 @@ After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate an
      "simplified for now") must never be judged invalid as "by design" or "out of scope" unless
      the user explicitly approved that scope adjustment earlier — cite that approval.
 4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-multi-agent-coding` again for just those findings → back to
+5. Valid findings remain → call `ss-coding` again for just those findings → back to
    step 1.
 
 **Convergence protection:**
-- Cap workflow-level rounds at 3, independent of `ss-multi-agent-coding`'s internal rounds; if
+- Cap workflow-level rounds at 3, independent of `ss-coding`'s internal rounds; if
   exceeded, escalate with the latest verdict plus the fixed/unresolved lists.
 - Track recurrence at the workflow level: the same finding judged valid across 2 consecutive
   workflow rounds after being "fixed" is a stall — escalate. Don't rely on
-  `ss-multi-agent-coding`'s internal counter; it doesn't accumulate across calls.
+  `ss-coding`'s internal counter; it doesn't accumulate across calls.
 - Record every "invalid" judgment and its reason. Never force a finding to "invalid" just to pass.
 
 ## Edge Cases & Error Handling
@@ -180,7 +180,7 @@ After `ss-multi-agent-coding` returns its verdict, this workflow sets no gate an
 |-----------|----------|
 | Input empty | Ask for a plan path, plan text, or change instruction |
 | Plan is missing a file list | Incomplete plan; report and stop |
-| Change instruction is too large (`ss-multi-agent-coding` estimates more than ~5 tasks or ~5 files) | Suggest switching to `ss-feature-workflow` for full planning; ask whether to continue anyway |
+| Change instruction is too large (`ss-coding` estimates more than ~5 tasks or ~5 files) | Suggest switching to `ss-feature-workflow` for full planning; ask whether to continue anyway |
 | Coding is blocked | Stop, escalate, preserve the scene |
 | Review-acceptance loop exceeds max rounds | Escalate |
 | Worktree creation fails | `ss-create-branch` falls back to in-place development automatically; record and continue |

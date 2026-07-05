@@ -204,7 +204,7 @@ When the sub-plans belong to **different git repositories** (not just different 
 | order-service | ../order-service | 2026-07-03-refund-order.md | 2 | payment-service (consumes its API) |
 
 **Unified branch name:** feat/<slug>
-**Contract changes:** <path to the shared API-contract repo, if `ss-build-api` already handled it / none>
+**Contract changes:** <path to the shared API-contract repo, if the contract change was prepared separately / none>
 **User-Confirmed Scope Adjustments:** none
 ```
 
@@ -213,7 +213,7 @@ When the sub-plans belong to **different git repositories** (not just different 
 
 ### If already split upstream
 
-If the input comes from the `ss-write-proposal-be` or `ss-write-proposal-fe` skill and was already scoped to one subsystem, skip this check and proceed directly to Phase 1.
+If the input comes from the `ss-proposal` skill and was already scoped to one subsystem, skip this check and proceed directly to Phase 1.
 
 ## Phase 1: Comprehend
 
@@ -448,7 +448,7 @@ If no issues: confirm "LGTM — plan is ready for execution."
 ```markdown
 # [Requirement Name] Execution Plan
 
-> **Agent execution guide:** use the `ss-multi-agent-coding` skill to execute these tasks in parallel per this plan.
+> **Agent execution guide:** use the `ss-coding` skill to execute these tasks in parallel per this plan.
 
 **Goal:** [one-sentence goal]
 **Architecture:** [2-3 sentences: pattern used, layering approach, core data flow]
@@ -480,7 +480,7 @@ After saving the plan, present execution options:
 ```
 Plan saved to docs/plans/<filename>.md. Execution options:
 
-1. ss-multi-agent-coding — multi-agent parallel execution (recommended for medium/large plans)
+1. ss-coding — multi-agent parallel execution (recommended for medium/large plans)
 2. Sequential execution — execute tasks one by one in this session (for small plans, ≤5 tasks)
 3. Manual review first — have the team review the plan before execution
 

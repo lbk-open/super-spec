@@ -13,7 +13,7 @@ whose Phase 0 runs this same logic automatically.
 
 - You need to align capability specs with reviewers before writing a full execution plan.
 - You need to adjust delta specs without regenerating the plan.
-- The `ss-multi-agent-coding` or `ss-create-pr` skill reported missing or invalid delta
+- The `ss-coding` or `ss-create-pr` skill reported missing or invalid delta
   specs.
 
 ## Inputs

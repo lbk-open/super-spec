@@ -89,12 +89,12 @@ Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 | Category | Skills |
 |---|---|
 | Living specs | `ss-write-spec`, `ss-archive`, `ss-list-changes`, `ss-show-spec`, `ss-trace-spec`, `ss-reverse-spec` |
-| Proposals & planning | `ss-write-proposal-be`, `ss-write-proposal-fe`, `ss-build-plan`, `ss-build-api` |
+| Proposals & planning | `ss-proposal`, `ss-build-plan` |
 | Workflows | `ss-feature-workflow`, `ss-coding-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` |
-| Multi-agent | `ss-multi-agent-coding`, `ss-multi-agent-cr` |
+| Multi-agent | `ss-coding`, `ss-code-review` |
 | Git delivery | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` |
-| Diagnostics | `ss-inspect`, `ss-explore-environment` |
-| Shared | `ss-guardrails` (safety/quality/anti-error checklists), `ss-feedback` (file an issue) |
+| Diagnostics | `ss-inspect` |
+| Shared | `ss-guardrails` (safety/quality/anti-error checklists) |
 
 ## How it compares
 
@@ -133,8 +133,7 @@ right fit, go check them out.
 
 ## Contributing
 
-Issues and PRs welcome. The fastest way to report a problem from inside your agent:
-run the `ss-feedback` skill. Repository conventions live in [AGENTS.md](AGENTS.md).
+Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
 
 ## License
 
