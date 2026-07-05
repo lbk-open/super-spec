@@ -34,6 +34,27 @@ Then ask your agent to run the workflow that matches the job:
 
 Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
 
+## Installation
+
+**Recommended: let an AI agent install it.** [INSTALL.md](INSTALL.md) is written for an
+agent to execute — platform selection, copying, verification, and collision checks
+included. Paste this into your agent session:
+
+```
+Install super-spec by following the instructions here:
+https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+```
+
+Prefer doing it by hand? The short version:
+
+- **Claude Code** — `/plugin marketplace add liyue2008/super-spec`, then
+  `/plugin install super-spec@super-spec`. Skills appear as `/ss-*` commands.
+- **Codex / Pi / OpenCode** — copy `skills/*` into `~/.agents/skills/` (all three scan
+  it), keeping the `ss-*` directories and `_references/` side by side. Project-scoped:
+  `<repo>/.agents/skills/`.
+
+Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
+
 ## Why super-spec
 
 - **Production-ready output, even off frontier models.** The pipeline — spec →
@@ -62,27 +83,6 @@ Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
 - **Guardrails, not style rules.** Security red lines, review standards, testing
   principles, and anti-mistake rules for AI agents (core + per-language). Never
   copied into your project; read by skills at runtime.
-
-## Installation
-
-**Recommended: let an AI agent install it.** [INSTALL.md](INSTALL.md) is written for an
-agent to execute — platform selection, copying, verification, and collision checks
-included. Paste this into your agent session:
-
-```
-Install super-spec by following the instructions here:
-https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
-```
-
-Prefer doing it by hand? The short version:
-
-- **Claude Code** — `/plugin marketplace add liyue2008/super-spec`, then
-  `/plugin install super-spec@super-spec`. Skills appear as `/ss-*` commands.
-- **Codex / Pi / OpenCode** — copy `skills/*` into `~/.agents/skills/` (all three scan
-  it), keeping the `ss-*` directories and `_references/` side by side. Project-scoped:
-  `<repo>/.agents/skills/`.
-
-Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 
 ## Skill catalog
 
