@@ -8,22 +8,57 @@ TDD coding and parallel code review, living specs that evolve with your code, an
 guardrails that keep AI-generated code safe and correct.
 
 Works with **Claude Code**, **OpenAI Codex**, **Pi**, and **OpenCode** — one
-`SKILL.md` source, no per-platform builds.
+`SKILL.md` source, no per-platform builds. It draws on ideas from two projects we
+admire, [superpowers](https://github.com/obra/superpowers) and
+[OpenSpec](https://github.com/Fission-AI/OpenSpec), and stays fully compatible with
+the OpenSpec directory convention.
 
-## Highlights
+## Quick start
 
-- **End-to-end workflows** — feature development, coding, and troubleshooting
-  orchestrated from requirement to pull request, with human gates at the decisions
-  that matter and resumability when a session dies mid-flight.
-- **Full and lite delivery modes** — run the whole branch → PR ceremony, or work
-  in place on the current branch and finish with clean conventional commits.
-  Quality gates are identical in both modes.
-- **Multi-agent coding & review** — TDD implementation dispatched to parallel
-  subagents, then a multi-dimensional review panel (quality, spec compliance,
-  integration) with severity-based verdicts.
-- **Living specs** — OpenSpec-style delta specs that evolve alongside the code:
-  write → archive → trace, plus reverse-engineering a baseline from an existing repo.
-- **Guardrails, not style rules** — security red lines, review standards, testing
+Install (Claude Code shown; other agents below):
+
+```
+/plugin marketplace add liyue2008/super-spec
+/plugin install super-spec@super-spec
+```
+
+Then ask your agent to run the workflow that matches the job:
+
+- *"Use ss-feature-workflow to implement this requirement: …"* — proposal → plan →
+  multi-agent coding → review → PR, with human gates in between.
+- *"Use ss-coding-workflow in lite mode on this plan"* — code and review on the
+  current branch, no PR ceremony.
+- *"Use ss-troubleshooting-workflow: production alert says …"* — evidence-based
+  root-cause analysis, fix, and delivery.
+
+Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
+
+## Why super-spec
+
+- **Production-ready output, even off frontier models.** The pipeline — spec →
+  plan → TDD implementation → parallel multi-dimensional review → guardrails —
+  is designed to extract dependable code from mid-tier models, rather than betting
+  on a single top-tier model getting everything right in one shot.
+- **The model runs the workflow, not a tool.** Workflows are markdown instructions
+  the agent itself executes: thin orchestration, human gates, resumability. There
+  is no orchestrator CLI, state machine, or code generator to install — if your
+  agent can read a skill, it can run the whole pipeline, and adapt it when reality
+  diverges from the happy path.
+- **End-to-end, not snippets.** Feature development, coding, and troubleshooting
+  are covered from requirement to pull request, with gates at the decisions that
+  matter and the ability to resume when a session dies mid-flight.
+- **Full and lite delivery modes.** Run the whole branch → PR ceremony, or work in
+  place on the current branch and finish with clean conventional commits. Quality
+  gates are identical in both modes.
+- **Multi-agent coding & review.** TDD implementation dispatched to parallel
+  subagents, then a review panel (quality, spec compliance, integration) with
+  severity-based verdicts and a bounded fix loop.
+- **Living specs, OpenSpec-compatible.** Delta specs that evolve alongside the
+  code — write → archive → trace — following the [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+  convention (`openspec/specs`, `openspec/changes`, archive lifecycle). A repo
+  initialized by the OpenSpec CLI works with super-spec's spec skills as-is, and
+  vice versa.
+- **Guardrails, not style rules.** Security red lines, review standards, testing
   principles, and anti-mistake rules for AI agents (core + per-language). Never
   copied into your project; read by skills at runtime.
 
@@ -64,18 +99,21 @@ prefer those locations.
 | Diagnostics | `ss-inspect`, `ss-explore-environment` |
 | Shared | `ss-guardrails` (safety/quality/anti-error checklists), `ss-feedback` (file an issue) |
 
-## Quick start
+## How it compares
 
-Ask your agent to run the workflow that matches the job:
+These projects share the same goal — making AI-written code trustworthy — but
+emphasize different layers. They're complementary more than competing; the notes
+below describe the differences, not a ranking.
 
-- *"Use ss-feature-workflow to implement this requirement: …"* — proposal → plan →
-  multi-agent coding → review → PR, with gates in between.
-- *"Use ss-coding-workflow in lite mode on this plan"* — code and review on the
-  current branch, no PR ceremony.
-- *"Use ss-troubleshooting-workflow: production alert says …"* — evidence-based
-  root-cause analysis, fix, and delivery.
+| Project | Primary focus | How it differs from super-spec |
+|---|---|---|
+| [superpowers](https://github.com/obra/superpowers) | A rich library of process skills (brainstorming, TDD, debugging, subagent-driven development) that instill working discipline | Focuses on *how to work* at the practice level; super-spec adds spec lifecycle management, end-to-end delivery workflows (requirement → PR), and per-language guardrails. Claude Code-first with adapters for other agents; super-spec ships one SKILL.md source for four runtimes |
+| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Spec change management: a CLI and conventions for proposing, approving, and archiving spec deltas | Manages *what to build* and leaves implementation to your agent; super-spec adopts its spec convention (fully compatible) and adds the execution half — planning, multi-agent coding, review, and delivery |
+| [spec-kit](https://github.com/github/spec-kit) | Spec-driven development driven by the `specify` CLI: constitution → specify → plan → tasks templates across many agents | Workflow advances through CLI-generated templates and scripts; super-spec keeps orchestration in prompts executed by the model itself, layers in multi-agent review and guardrails, and is built around living specs that outlive a single feature |
 
-Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
+If you already use OpenSpec, super-spec plugs into the same `openspec/` directory.
+If you use superpowers, the two skill sets coexist under the same agent without
+conflict — the `ss-` prefix keeps names disjoint.
 
 ## Design documentation
 
@@ -87,6 +125,14 @@ Or invoke any skill directly — each `SKILL.md` documents its inputs and steps.
 | [spec-driven.md](docs/spec-driven.md) | Living specs: delta → archive → trace |
 | [worktree-and-multi-repo.md](docs/worktree-and-multi-repo.md) | Parallel-work isolation and multi-repo orchestration |
 | [guardrails.md](docs/guardrails.md) | Why guardrails cover only safety, quality, and anti-error rules |
+
+## Acknowledgements
+
+super-spec stands on the shoulders of two excellent open-source projects:
+[superpowers](https://github.com/obra/superpowers) pioneered packaging engineering
+discipline as agent skills, and [OpenSpec](https://github.com/Fission-AI/OpenSpec)
+defined the spec-delta convention this toolkit builds on. If super-spec isn't the
+right fit, go check them out.
 
 ## Contributing
 
