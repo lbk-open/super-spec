@@ -2,6 +2,11 @@
 
 English | [简体中文](README.zh-CN.md)
 
+[![CI](https://img.shields.io/github/actions/workflow/status/lbk-open/super-spec/ci.yml?branch=main&label=ci)](https://github.com/lbk-open/super-spec/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/lbk-open/super-spec?label=release)](https://github.com/lbk-open/super-spec/releases)
+[![License](https://img.shields.io/github/license/lbk-open/super-spec)](LICENSE)
+[![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
+
 > Spec-driven development toolkit for AI coding agents.
 
 super-spec packages battle-tested engineering workflows as portable

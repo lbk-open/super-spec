@@ -2,6 +2,11 @@
 
 [English](README.md) | 简体中文
 
+[![CI](https://img.shields.io/github/actions/workflow/status/lbk-open/super-spec/ci.yml?branch=main&label=ci)](https://github.com/lbk-open/super-spec/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/lbk-open/super-spec?label=release)](https://github.com/lbk-open/super-spec/releases)
+[![License](https://img.shields.io/github/license/lbk-open/super-spec)](LICENSE)
+[![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
+
 > 面向 AI 编码代理的规格驱动开发工具集。
 
 super-spec 将经过实战检验的工程化工作流封装为可移植的
