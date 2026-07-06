@@ -1,0 +1,17 @@
+package.json
+  ai_agent 6
+.claude-plugin/plugin.json
+  ai_agent 9
+INSTALL.md
+  ai_agent 10,18,41,55,66,78,86,103,157,177
+README.zh-CN.md
+  ai_agent 25,47,52,54,57,59,205
+README.md
+  ai_agent 25,48,53,55,58,60,229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "420e0839ceda0c2048729441e7e615aceb81f8d7",
+  "prompts": {}
+}
