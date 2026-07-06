@@ -7,7 +7,7 @@
 >
 > ```
 > Install super-spec by following the instructions here:
-> https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+> https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 > ```
 
 ---
@@ -15,7 +15,7 @@
 ## Agent instructions
 
 You are installing **super-spec**, a set of Agent Skills (`SKILL.md` directories with an
-`ss-` prefix) from `https://github.com/liyue2008/super-spec`. Follow the steps in order.
+`ss-` prefix) from `https://github.com/lbk-open/super-spec`. Follow the steps in order.
 Verify each step before moving on. If a step fails, stop and report the exact error —
 do not improvise alternative install locations.
 
@@ -38,7 +38,7 @@ for c in claude codex pi opencode; do command -v "$c" >/dev/null && echo "$c: in
 Claude Code installs super-spec as a plugin; no file copying needed.
 
 ```bash
-claude plugin marketplace add liyue2008/super-spec
+claude plugin marketplace add lbk-open/super-spec
 claude plugin install super-spec@super-spec
 ```
 
@@ -52,7 +52,7 @@ Expected: `super-spec@super-spec` with `Status: ✔ enabled`. Skills appear as `
 commands in the user's next Claude Code session.
 
 If the `claude` CLI is not on PATH, tell the user to run `/plugin marketplace add
-liyue2008/super-spec` and `/plugin install super-spec@super-spec` inside a Claude Code
+lbk-open/super-spec` and `/plugin install super-spec@super-spec` inside a Claude Code
 session instead.
 
 ### Step 3 — Codex, Pi, and/or OpenCode (if selected)
@@ -63,7 +63,7 @@ and use the manual copy below only if the native route fails or the user asks fo
 **OpenAI Codex — plugin marketplace:**
 
 ```bash
-codex plugin marketplace add https://github.com/liyue2008/super-spec
+codex plugin marketplace add https://github.com/lbk-open/super-spec
 codex plugin add super-spec@super-spec
 ```
 
@@ -75,7 +75,7 @@ it up).
 **Pi — git package (install without a version pin so updates work):**
 
 ```bash
-pi install git:github.com/liyue2008/super-spec
+pi install git:github.com/lbk-open/super-spec
 ```
 
 Verify with `pi list`. Updates later: `pi update --all`.
@@ -83,7 +83,7 @@ Verify with `pi list`. Updates later: `pi update --all`.
 **OpenCode — the `skills` CLI (community de-facto standard):**
 
 ```bash
-npx skills add liyue2008/super-spec -a opencode
+npx skills add lbk-open/super-spec -a opencode
 ```
 
 Updates later: `npx skills update`. (The same CLI can also target Codex and Claude Code
@@ -100,7 +100,7 @@ Copy the skills (a shallow clone into a temp dir keeps things clean):
 ```bash
 TARGET="$HOME/.agents/skills"          # or "<project-root>/.agents/skills" for project scope
 TMP="$(mktemp -d)"
-git clone --depth 1 https://github.com/liyue2008/super-spec.git "$TMP/super-spec"
+git clone --depth 1 https://github.com/lbk-open/super-spec.git "$TMP/super-spec"
 mkdir -p "$TARGET"
 cp -R "$TMP/super-spec/skills/"* "$TARGET/"
 rm -rf "$TMP"
@@ -154,7 +154,7 @@ Tell the user, concretely:
 - the verification results (plugin enabled / `ss-*` count);
 - how to start: *"Ask your agent to `use ss-feature-workflow to implement <requirement>`,
   or invoke any `/ss-*` skill directly — see the
-  [skill catalog](https://github.com/liyue2008/super-spec#skill-catalog)."*
+  [skill catalog](https://github.com/lbk-open/super-spec#skill-catalog)."*
 - that a restart of the agent session may be needed before skills are visible.
 
 ## Upgrading
@@ -174,7 +174,7 @@ Tell the user, concretely:
   `claude plugin marketplace remove super-spec`.
 - **Codex (plugin route):** `codex plugin remove super-spec`, then optionally
   `codex plugin marketplace remove super-spec`.
-- **Pi:** `pi remove git:github.com/liyue2008/super-spec`.
+- **Pi:** `pi remove git:github.com/lbk-open/super-spec`.
 - **OpenCode (`skills` CLI):** `npx skills remove <skill-name>` per skill, or delete the
   copies it created.
 - **Manual copies:** remove exactly what Step 3 copied:

@@ -22,7 +22,7 @@ Codex、Pi、OpenCode 均可）：
 
 ```
 Install super-spec by following the instructions here:
-https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
 随后按任务类型让代理执行相应工作流：
@@ -44,19 +44,19 @@ https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
 
 ```
 Install super-spec by following the instructions here:
-https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
 如需手动安装，简要步骤如下：
 
-- **Claude Code** —— `/plugin marketplace add liyue2008/super-spec`，随后
+- **Claude Code** —— `/plugin marketplace add lbk-open/super-spec`，随后
   `/plugin install super-spec@super-spec`。安装后以 `/ss-*` 命令形式使用。
-- **OpenAI Codex** —— `codex plugin marketplace add https://github.com/liyue2008/super-spec`，
+- **OpenAI Codex** —— `codex plugin marketplace add https://github.com/lbk-open/super-spec`，
   随后 `codex plugin add super-spec@super-spec`。更新执行
   `codex plugin marketplace upgrade super-spec`。
-- **Pi** —— `pi install git:github.com/liyue2008/super-spec`（不指定版本号）。
+- **Pi** —— `pi install git:github.com/lbk-open/super-spec`（不指定版本号）。
   更新执行 `pi update --all`。
-- **OpenCode** —— `npx skills add liyue2008/super-spec -a opencode`。更新执行
+- **OpenCode** —— `npx skills add lbk-open/super-spec -a opencode`。更新执行
   `npx skills update`。
 - **手动兜底（Codex / Pi / OpenCode）** —— 将 `skills/*` 拷贝到
   `~/.agents/skills/`（三者共用该发现路径），并保持 `ss-*` 目录与
@@ -202,7 +202,7 @@ agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
 
 - **Codex** —— `codex plugin remove super-spec`，随后可选执行
   `codex plugin marketplace remove super-spec`。
-- **Pi** —— `pi remove git:github.com/liyue2008/super-spec`。
+- **Pi** —— `pi remove git:github.com/lbk-open/super-spec`。
 - **手动拷贝安装（Codex / Pi / OpenCode）** —— 删除安装时拷贝的内容即可
   （项目级安装或 OpenCode 备选路径请相应调整）：
 

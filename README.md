@@ -22,7 +22,7 @@ Let your agent install super-spec for you — paste this into any agent session
 
 ```
 Install super-spec by following the instructions here:
-https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
 Then ask your agent to run the workflow that matches the job:
@@ -45,19 +45,19 @@ included. Paste this into your agent session:
 
 ```
 Install super-spec by following the instructions here:
-https://raw.githubusercontent.com/liyue2008/super-spec/main/INSTALL.md
+https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
 Prefer doing it by hand? The short version:
 
-- **Claude Code** — `/plugin marketplace add liyue2008/super-spec`, then
+- **Claude Code** — `/plugin marketplace add lbk-open/super-spec`, then
   `/plugin install super-spec@super-spec`. Skills appear as `/ss-*` commands.
-- **OpenAI Codex** — `codex plugin marketplace add https://github.com/liyue2008/super-spec`,
+- **OpenAI Codex** — `codex plugin marketplace add https://github.com/lbk-open/super-spec`,
   then `codex plugin add super-spec@super-spec`. Update with
   `codex plugin marketplace upgrade super-spec`.
-- **Pi** — `pi install git:github.com/liyue2008/super-spec` (no version pin). Update with
+- **Pi** — `pi install git:github.com/lbk-open/super-spec` (no version pin). Update with
   `pi update --all`.
-- **OpenCode** — `npx skills add liyue2008/super-spec -a opencode`. Update with
+- **OpenCode** — `npx skills add lbk-open/super-spec -a opencode`. Update with
   `npx skills update`.
 - **Manual fallback (Codex / Pi / OpenCode)** — copy `skills/*` into `~/.agents/skills/`
   (all three scan it), keeping the `ss-*` directories and `_references/` side by side.
@@ -226,7 +226,7 @@ Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
 
 - **Codex** — `codex plugin remove super-spec`, then optionally
   `codex plugin marketplace remove super-spec`.
-- **Pi** — `pi remove git:github.com/liyue2008/super-spec`.
+- **Pi** — `pi remove git:github.com/lbk-open/super-spec`.
 - **Manual copies (Codex / Pi / OpenCode)** — remove exactly what the install copied
   (adjust the path if you installed project-scoped or to an OpenCode alternate location):
 
