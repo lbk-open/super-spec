@@ -1,6 +1,6 @@
-# super-spec — Repository Guide
+# SuperSpec — Repository Guide
 
-super-spec is a spec-driven development toolkit for AI coding agents, shipped as
+SuperSpec is a spec-driven development toolkit for AI coding agents, shipped as
 portable [Agent Skills](https://agentskills.io) (SKILL.md) that work across Claude
 Code, OpenAI Codex, Pi, and OpenCode from a single source — no per-platform builds.
 

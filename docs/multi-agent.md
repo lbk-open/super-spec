@@ -1,6 +1,6 @@
 # Multi-Agent Collaboration
 
-Two skills in super-spec — `ss-coding` and `ss-code-review` — get their names from the same idea applied to two different problems: instead of one agent doing everything in a single long-running context, split the work across several agents that each hold a narrower, more focused context, and let a coordinating agent manage the handoffs. `ss-coding` splits *implementation* across parallel task-scoped agents; `ss-code-review` splits *review* across independent, dimension-scoped agents. Together they form the coding-and-review step that every workflow in [workflows.md](./workflows.md) calls as a single unit.
+Two skills in SuperSpec — `ss-coding` and `ss-code-review` — get their names from the same idea applied to two different problems: instead of one agent doing everything in a single long-running context, split the work across several agents that each hold a narrower, more focused context, and let a coordinating agent manage the handoffs. `ss-coding` splits *implementation* across parallel task-scoped agents; `ss-code-review` splits *review* across independent, dimension-scoped agents. Together they form the coding-and-review step that every workflow in [workflows.md](./workflows.md) calls as a single unit.
 
 ## Why Split the Work
 

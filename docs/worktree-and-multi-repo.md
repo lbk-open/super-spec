@@ -18,7 +18,7 @@ This document covers both problems, because they share a root cause — a single
 
 A git worktree is a second working directory attached to the same repository, checked out to a different branch, sharing the same object store. It gives a feature branch its own directory without cloning the repository again, and without ever touching the branch the main checkout happens to be on.
 
-This is the same approach recommended by the public [`superpowers`](https://github.com/obra/superpowers) skill collection's `using-git-worktrees` guidance, and super-spec follows its core sequence closely: detect any isolation that already exists, prefer a host tool's native worktree support when one is available, and fall back to plain `git worktree` commands when it isn't.
+This is the same approach recommended by the public [`superpowers`](https://github.com/obra/superpowers) skill collection's `using-git-worktrees` guidance, and SuperSpec follows its core sequence closely: detect any isolation that already exists, prefer a host tool's native worktree support when one is available, and fall back to plain `git worktree` commands when it isn't.
 
 ### Detecting existing isolation first
 
@@ -61,7 +61,7 @@ A fresh worktree starts empty of anything git doesn't track — submodules aren'
 Not every task needs isolation, and asking every single time gets old fast. The decision order, from most to least specific:
 
 1. **An explicit choice on the invocation** — pass a flag to use a worktree, or a flag to develop in place, and that settles it for this run.
-2. **A standing team convention** — if a project's own contributing guide documents a default (e.g., "we always work in worktrees here"), a contributor or an automated workflow can simply always pass the matching flag and never hit the next step. super-spec's skills don't write this convention into the project themselves; recording and following it is left to the team, the same way any other project convention is. One machine-readable way to record it is an `SS-WORKTREE` managed block in `AGENTS.md` — `ss-create-branch` looks for exactly this key:
+2. **A standing team convention** — if a project's own contributing guide documents a default (e.g., "we always work in worktrees here"), a contributor or an automated workflow can simply always pass the matching flag and never hit the next step. SuperSpec's skills don't write this convention into the project themselves; recording and following it is left to the team, the same way any other project convention is. One machine-readable way to record it is an `SS-WORKTREE` managed block in `AGENTS.md` — `ss-create-branch` looks for exactly this key:
 
   ```markdown
   <!-- SS-WORKTREE:START -->

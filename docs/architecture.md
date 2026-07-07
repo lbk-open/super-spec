@@ -1,6 +1,6 @@
 # Architecture
 
-super-spec is a spec-driven development toolkit for AI coding agents. It packages
+SuperSpec is a spec-driven development toolkit for AI coding agents. It packages
 engineering workflows — spec authoring, planning, multi-agent coding, multi-agent
 review, PR delivery, troubleshooting — as a single set of [Agent Skills](https://agentskills.io)
 that runs unmodified on Claude Code, OpenAI Codex, Pi, and OpenCode.
@@ -17,7 +17,7 @@ defaults to whatever is average in its training data — not what your team actu
 does. Four problems show up repeatedly once AI is doing real engineering work
 instead of autocomplete:
 
-| Problem | What happens without a toolkit | How super-spec addresses it |
+| Problem | What happens without a toolkit | How SuperSpec addresses it |
 |---|---|---|
 | Inconsistent process | Every session runs the task differently; output quality swings from run to run | Each task type gets a skill that encodes one fixed procedure |
 | Standards never reach the agent | Security, testing, and review rules live in documents humans skim once and forget | Guardrails ship as files a skill reads automatically, not prose a human has to remember |

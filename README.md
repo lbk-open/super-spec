@@ -1,4 +1,4 @@
-# super-spec
+# SuperSpec
 
 English | [简体中文](README.zh-CN.md)
 
@@ -9,7 +9,7 @@ English | [简体中文](README.zh-CN.md)
 
 > Spec-driven development toolkit for AI coding agents.
 
-super-spec packages battle-tested engineering workflows as portable
+SuperSpec packages battle-tested engineering workflows as portable
 [Agent Skills](https://agentskills.io): end-to-end feature workflows, multi-agent
 TDD coding and parallel code review, living specs that evolve with your code, and
 guardrails that keep AI-generated code safe and correct.
@@ -22,11 +22,11 @@ the OpenSpec directory convention.
 
 ## Quick start
 
-Let your agent install super-spec for you — paste this into any agent session
+Let your agent install SuperSpec for you — paste this into any agent session
 (Claude Code, Codex, Pi, OpenCode, …):
 
 ```
-Install super-spec by following the instructions here:
+Install SuperSpec by following the instructions here:
 https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
@@ -49,7 +49,7 @@ agent to execute — platform selection, copying, verification, and collision ch
 included. Paste this into your agent session:
 
 ```
-Install super-spec by following the instructions here:
+Install SuperSpec by following the instructions here:
 https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
@@ -70,7 +70,7 @@ Prefer doing it by hand? The short version:
 
 Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 
-## Why super-spec
+## Why SuperSpec
 
 - **Production-ready output, even off frontier models.** The pipeline — spec →
   plan → TDD implementation → parallel multi-dimensional review → guardrails —
@@ -93,7 +93,7 @@ Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 - **Living specs, OpenSpec-compatible.** Delta specs that evolve alongside the
   code — write → archive → trace — following the [OpenSpec](https://github.com/Fission-AI/OpenSpec)
   convention (`openspec/specs`, `openspec/changes`, archive lifecycle). A repo
-  initialized by the OpenSpec CLI works with super-spec's spec skills as-is, and
+  initialized by the OpenSpec CLI works with SuperSpec's spec skills as-is, and
   vice versa.
 - **Guardrails, not style rules.** Security red lines, review standards, testing
   principles, and anti-mistake rules for AI agents (core + per-language). Never
@@ -187,13 +187,13 @@ These projects share the same goal — making AI-written code trustworthy — bu
 emphasize different layers. They're complementary more than competing; the notes
 below describe the differences, not a ranking.
 
-| Project | Primary focus | How it differs from super-spec |
+| Project | Primary focus | How it differs from SuperSpec |
 |---|---|---|
-| [superpowers](https://github.com/obra/superpowers) | A rich library of process skills (brainstorming, TDD, debugging, subagent-driven development) that instill working discipline | Focuses on *how to work* at the practice level; super-spec adds spec lifecycle management, end-to-end delivery workflows (requirement → PR), and per-language guardrails. Claude Code-first with adapters for other agents; super-spec ships one SKILL.md source for four runtimes |
-| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Spec change management: a CLI and conventions for proposing, approving, and archiving spec deltas | Manages *what to build* and leaves implementation to your agent; super-spec adopts its spec convention (fully compatible) and adds the execution half — planning, multi-agent coding, review, and delivery |
-| [spec-kit](https://github.com/github/spec-kit) | Spec-driven development driven by the `specify` CLI: constitution → specify → plan → tasks templates across many agents | Workflow advances through CLI-generated templates and scripts; super-spec keeps orchestration in prompts executed by the model itself, layers in multi-agent review and guardrails, and is built around living specs that outlive a single feature |
+| [superpowers](https://github.com/obra/superpowers) | A rich library of process skills (brainstorming, TDD, debugging, subagent-driven development) that instill working discipline | Focuses on *how to work* at the practice level; SuperSpec adds spec lifecycle management, end-to-end delivery workflows (requirement → PR), and per-language guardrails. Claude Code-first with adapters for other agents; SuperSpec ships one SKILL.md source for four runtimes |
+| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Spec change management: a CLI and conventions for proposing, approving, and archiving spec deltas | Manages *what to build* and leaves implementation to your agent; SuperSpec adopts its spec convention (fully compatible) and adds the execution half — planning, multi-agent coding, review, and delivery |
+| [spec-kit](https://github.com/github/spec-kit) | Spec-driven development driven by the `specify` CLI: constitution → specify → plan → tasks templates across many agents | Workflow advances through CLI-generated templates and scripts; SuperSpec keeps orchestration in prompts executed by the model itself, layers in multi-agent review and guardrails, and is built around living specs that outlive a single feature |
 
-If you already use OpenSpec, super-spec plugs into the same `openspec/` directory.
+If you already use OpenSpec, SuperSpec plugs into the same `openspec/` directory.
 If you use superpowers, the two skill sets coexist under the same agent without
 conflict — the `ss-` prefix keeps names disjoint.
 
@@ -210,10 +210,10 @@ conflict — the `ss-` prefix keeps names disjoint.
 
 ## Acknowledgements
 
-super-spec stands on the shoulders of two excellent open-source projects:
+SuperSpec stands on the shoulders of two excellent open-source projects:
 [superpowers](https://github.com/obra/superpowers) pioneered packaging engineering
 discipline as agent skills, and [OpenSpec](https://github.com/Fission-AI/OpenSpec)
-defined the spec-delta convention this toolkit builds on. If super-spec isn't the
+defined the spec-delta convention this toolkit builds on. If SuperSpec isn't the
 right fit, go check them out.
 
 ## Contributing
@@ -239,7 +239,7 @@ Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
   rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references
   ```
 
-super-spec keeps no state outside the skills directory and never writes into your
+SuperSpec keeps no state outside the skills directory and never writes into your
 projects, so there is nothing else to clean up. Details: [INSTALL.md](INSTALL.md#uninstalling).
 
 ## License

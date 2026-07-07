@@ -1,6 +1,6 @@
 # Guardrails
 
-Guardrails are the part of super-spec that says no. Every other skill in the
+Guardrails are the part of SuperSpec that says no. Every other skill in the
 toolkit is about getting work done — draft a spec, cut a branch, implement a
 plan, open a pull request. Guardrails exist to stop an agent from doing damage
 while it does that work. This document explains why they're scoped as narrowly
@@ -23,7 +23,7 @@ Every engineering team accumulates two very different kinds of convention:
    universal. Getting one of these wrong doesn't start a style debate — it
    ships an incident.
 
-super-spec's guardrails cover only the second category. If a rule is really
+SuperSpec's guardrails cover only the second category. If a rule is really
 about taste — naming, framework choice, folder layout, which testing library
 you prefer — it isn't a guardrail, and it isn't in this toolkit at all. That
 territory belongs to the project itself: its existing code, its own
@@ -113,7 +113,7 @@ oversight, for three reasons:
   raises the question of whether that copy is current. Reading guardrails
   from the toolkit itself means there's never a stale copy to notice, let
   alone update.
-- **No intrusion.** super-spec's skills, guardrails included, don't write
+- **No intrusion.** SuperSpec's skills, guardrails included, don't write
   vendor files into someone else's repository. What skills do create are the
   user's own work products — the `openspec/` directory the spec skills manage,
   the proposals and plans a user asks
