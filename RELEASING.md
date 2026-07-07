@@ -1,4 +1,4 @@
-# Releasing super-spec
+# Releasing SuperSpec
 
 Releases here are lightweight by design. There is nothing to build and nothing to
 publish to a registry: every distribution channel — the Claude Code plugin

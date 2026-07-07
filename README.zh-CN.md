@@ -1,4 +1,4 @@
-# super-spec
+# SuperSpec
 
 [English](README.md) | 简体中文
 
@@ -9,7 +9,7 @@
 
 > 面向 AI 编码代理的规格驱动开发工具集。
 
-super-spec 将经过实战检验的工程化工作流封装为可移植的
+SuperSpec 将经过实战检验的工程化工作流封装为可移植的
 [Agent Skills](https://agentskills.io)：端到端的需求交付流程、多代理 TDD
 编码与并行代码评审、随代码共同演进的活规格（living specs），以及约束 AI
 产出安全性与正确性的工程护栏（guardrails）。
@@ -26,7 +26,7 @@ super-spec 将经过实战检验的工程化工作流封装为可移植的
 Codex、Pi、OpenCode 均可）：
 
 ```
-Install super-spec by following the instructions here:
+Install SuperSpec by following the instructions here:
 https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
@@ -48,7 +48,7 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 涵盖平台选择、安装、校验与命名冲突检查。将下面内容粘贴到代理会话即可：
 
 ```
-Install super-spec by following the instructions here:
+Install SuperSpec by following the instructions here:
 https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 ```
 
@@ -69,7 +69,7 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 
 完整的安装、升级与卸载说明见 [INSTALL.md](INSTALL.md)。
 
-## 为什么选择 super-spec
+## 为什么选择 SuperSpec
 
 - **以流程保证产出质量，而非依赖顶级模型。** 规格 → 计划 → TDD 实现 →
   多维并行评审 → 护栏约束，这条流水线的设计目标是让中档模型也能稳定产出可靠代码，
@@ -86,7 +86,7 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 - **活规格，兼容 OpenSpec。** delta 规格随代码同步演进——编写 → 归档 → 追溯，
   遵循 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 规范（`openspec/specs`、
   `openspec/changes`、归档生命周期）。由 OpenSpec CLI 初始化的仓库可直接使用
-  super-spec 的规格类 skills，反之亦然。
+  SuperSpec 的规格类 skills，反之亦然。
 - **只设护栏，不管风格。** 安全红线、评审标准、测试原则与面向 AI 代理的防错规则
   （通用核心 + 按语言清单）。护栏从不拷贝进用户项目，由 skills 在运行时按需读取。
 
@@ -163,13 +163,13 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 这些项目目标一致——让 AI 编写的代码值得信任——但侧重的层面不同。它们之间
 互补多于竞争；下表旨在说明差异，而非排出优劣。
 
-| 项目 | 主要侧重 | 与 super-spec 的差异 |
+| 项目 | 主要侧重 | 与 SuperSpec 的差异 |
 |---|---|---|
-| [superpowers](https://github.com/obra/superpowers) | 丰富的过程类 skill 库（头脑风暴、TDD、调试、子代理驱动开发），塑造工作纪律 | 侧重实践层面的*工作方法*；super-spec 在此之上补充了规格生命周期管理、端到端交付工作流（需求 → PR）与按语言划分的护栏。superpowers 以 Claude Code 为主、辅以其他代理的适配层；super-spec 以单一 SKILL.md 源覆盖四个运行时 |
-| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | 规格变更管理：一套用于提出、审批与归档 spec delta 的 CLI 与规范 | 管理*要构建什么*，实现交给代理自身；super-spec 采纳其规格规范（完全兼容），并补上执行侧的另一半——计划、多代理编码、评审与交付 |
-| [spec-kit](https://github.com/github/spec-kit) | 由 `specify` CLI 驱动的规格驱动开发：constitution → specify → plan → tasks 模板，覆盖多种代理 | 工作流依靠 CLI 生成的模板与脚本推进；super-spec 将编排完全保留在由模型自行执行的提示词中，叠加多代理评审与护栏，并以跨越单个需求生命周期的活规格为核心 |
+| [superpowers](https://github.com/obra/superpowers) | 丰富的过程类 skill 库（头脑风暴、TDD、调试、子代理驱动开发），塑造工作纪律 | 侧重实践层面的*工作方法*；SuperSpec 在此之上补充了规格生命周期管理、端到端交付工作流（需求 → PR）与按语言划分的护栏。superpowers 以 Claude Code 为主、辅以其他代理的适配层；SuperSpec 以单一 SKILL.md 源覆盖四个运行时 |
+| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | 规格变更管理：一套用于提出、审批与归档 spec delta 的 CLI 与规范 | 管理*要构建什么*，实现交给代理自身；SuperSpec 采纳其规格规范（完全兼容），并补上执行侧的另一半——计划、多代理编码、评审与交付 |
+| [spec-kit](https://github.com/github/spec-kit) | 由 `specify` CLI 驱动的规格驱动开发：constitution → specify → plan → tasks 模板，覆盖多种代理 | 工作流依靠 CLI 生成的模板与脚本推进；SuperSpec 将编排完全保留在由模型自行执行的提示词中，叠加多代理评审与护栏，并以跨越单个需求生命周期的活规格为核心 |
 
-如果你已在使用 OpenSpec，super-spec 可直接接入同一个 `openspec/` 目录；
+如果你已在使用 OpenSpec，SuperSpec 可直接接入同一个 `openspec/` 目录；
 如果你在使用 superpowers，两套 skills 可在同一代理下共存——`ss-` 前缀保证了
 命名互不冲突。
 
@@ -186,10 +186,10 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 
 ## 致谢
 
-super-spec 站在两个优秀开源项目的肩膀上：
+SuperSpec 站在两个优秀开源项目的肩膀上：
 [superpowers](https://github.com/obra/superpowers) 开创了将工程纪律封装为
 agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
-定义了本工具集所依赖的 spec-delta 规范。如果 super-spec 不适合你的场景，
+定义了本工具集所依赖的 spec-delta 规范。如果 SuperSpec 不适合你的场景，
 不妨了解一下它们。
 
 ## 参与贡献
@@ -215,7 +215,7 @@ agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
   rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references
   ```
 
-super-spec 在 skills 目录之外不保存任何状态，也从不写入你的项目，
+SuperSpec 在 skills 目录之外不保存任何状态，也从不写入你的项目，
 因此没有其他需要清理的内容。详见 [INSTALL.md](INSTALL.md#uninstalling)。
 
 ## 许可证

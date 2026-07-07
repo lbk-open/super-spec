@@ -10,7 +10,7 @@ Most AI-assisted delivery workflows produce two kinds of documents on the way to
 
 Spec-driven development closes this gap by keeping one living document per capability — a **spec** — that represents the system's current, authoritative behavior. Every change to that behavior is expressed as an explicit **delta**: a diff-like statement of what's being added, modified, or removed. Deltas get merged into the living spec and archived once the change lands, so the spec is always current and the history of how it got there is always retrievable.
 
-This isn't a novel idea — it's the model popularized by [OpenSpec](https://github.com/Fission-AI/OpenSpec), and this document describes how super-spec's skills implement that model without depending on OpenSpec's own CLI. The file formats are intentionally compatible: a repository using `openspec/` conventions can be worked on by both OpenSpec's own tooling and super-spec's skills without conflict.
+This isn't a novel idea — it's the model popularized by [OpenSpec](https://github.com/Fission-AI/OpenSpec), and this document describes how SuperSpec's skills implement that model without depending on OpenSpec's own CLI. The file formats are intentionally compatible: a repository using `openspec/` conventions can be worked on by both OpenSpec's own tooling and SuperSpec's skills without conflict.
 
 ## Core idea
 
@@ -54,7 +54,7 @@ A few conventions worth calling out:
 - **A change can touch multiple capabilities.** `add-order-refund` might add a brand-new `order-refund` capability while modifying an existing `order-create` requirement — each gets its own delta file under the same change directory.
 - **Capability names are stable, kebab-case noun phrases** (`order-refund`, `user-auth`), chosen for the business domain they represent rather than for a class or module name. They can be renamed via a delta, but splitting them casually defeats the purpose — aim for roughly a handful to a few dozen requirements per capability, not one per endpoint.
 - **`proposal.md` lives inside the change directory**, not just linked from elsewhere. Once a change is archived it needs to be self-contained; a soft reference into a separate `docs/proposals/` folder would go stale the moment the directory moves.
-- **This directory is a project asset the user owns**, not a super-spec working file — it's meant to be committed, reviewed in pull requests, and read by the next contributor (human or agent) exactly like the code it describes.
+- **This directory is a project asset the user owns**, not a SuperSpec working file — it's meant to be committed, reviewed in pull requests, and read by the next contributor (human or agent) exactly like the code it describes.
 
 ## The Requirement / Scenario format
 
@@ -143,7 +143,7 @@ flowchart LR
     F --> H["History stays queryable\nforever"]
 ```
 
-Archival is deliberately **agent-driven merge**, not a scripted find-and-replace. A regex-based merge has to replace requirements wholesale and chokes on partial edits or mixed-language content; an agent reading both the delta and the current living spec can apply a surgical change — add one scenario, tweak one sentence — while leaving the rest of the requirement untouched. This mirrors OpenSpec's own recommended path for programmatic merges versus agent-assisted ones, and it's the reason super-spec doesn't ship a merge script: the `ss-archive` skill does the merge by reading and editing markdown directly.
+Archival is deliberately **agent-driven merge**, not a scripted find-and-replace. A regex-based merge has to replace requirements wholesale and chokes on partial edits or mixed-language content; an agent reading both the delta and the current living spec can apply a surgical change — add one scenario, tweak one sentence — while leaving the rest of the requirement untouched. This mirrors OpenSpec's own recommended path for programmatic merges versus agent-assisted ones, and it's the reason SuperSpec doesn't ship a merge script: the `ss-archive` skill does the merge by reading and editing markdown directly.
 
 Archival is also **idempotent**. Running it against a change that's already archived, or one that never produced a delta (a documentation-only or pure-refactor change — see "how much ceremony" below), is a safe no-op rather than an error. That property is what lets a "ship it" skill call archive unconditionally as a first step without worrying about double-applying anything.
 

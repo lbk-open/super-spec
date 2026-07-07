@@ -3,7 +3,7 @@
   "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails",
   "version": "0.1.0",
   "author": {
-    "name": "super-spec maintainers"
+    "name": "SuperSpec maintainers"
   },
   "license": "Apache-2.0",
   "homepage": "https://github.com/lbk-open/super-spec"

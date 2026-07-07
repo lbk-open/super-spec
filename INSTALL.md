@@ -1,4 +1,4 @@
-# Installing super-spec
+# Installing SuperSpec
 
 > **This document is written for an AI coding agent to execute.**
 >
@@ -6,7 +6,7 @@
 > any agent with shell access) and let it do the rest:
 >
 > ```
-> Install super-spec by following the instructions here:
+> Install SuperSpec by following the instructions here:
 > https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 > ```
 
@@ -14,7 +14,7 @@
 
 ## Agent instructions
 
-You are installing **super-spec**, a set of Agent Skills (`SKILL.md` directories with an
+You are installing **SuperSpec**, a set of Agent Skills (`SKILL.md` directories with an
 `ss-` prefix) from `https://github.com/lbk-open/super-spec`. Follow the steps in order.
 Verify each step before moving on. If a step fails, stop and report the exact error —
 do not improvise alternative install locations.
@@ -35,7 +35,7 @@ for c in claude codex pi opencode; do command -v "$c" >/dev/null && echo "$c: in
 
 ### Step 2 — Claude Code (if selected)
 
-Claude Code installs super-spec as a plugin; no file copying needed.
+Claude Code installs SuperSpec as a plugin; no file copying needed.
 
 ```bash
 claude plugin marketplace add lbk-open/super-spec
@@ -183,6 +183,6 @@ Tell the user, concretely:
   rm -rf "$TARGET"/ss-* "$TARGET/_references"
   ```
 
-  Nothing else is written anywhere — super-spec keeps no state outside the skills
+  Nothing else is written anywhere — SuperSpec keeps no state outside the skills
   directory and never writes into user projects (see
   [docs/guardrails.md](docs/guardrails.md)).

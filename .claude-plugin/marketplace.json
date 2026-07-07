@@ -2,7 +2,7 @@
   "name": "super-spec",
   "description": "Spec-driven development workflows, multi-agent coding and review, and engineering guardrails for AI coding agents",
   "owner": {
-    "name": "super-spec maintainers"
+    "name": "SuperSpec maintainers"
   },
   "plugins": [
     {
