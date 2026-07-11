@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="SuperSpec">
+  <title>SuperSpec</title>
+  <rect width="512" height="512" rx="112" fill="#1E1B2E"/>
+  <!-- spec sheet -->
+  <rect x="112" y="96" width="288" height="320" rx="28" fill="#2A2640"/>
+  <!-- spec lines -->
+  <rect x="156" y="152" width="200" height="16" rx="8" fill="#6E56CF"/>
+  <rect x="156" y="196" width="144" height="16" rx="8" fill="#4A4266"/>
+  <rect x="156" y="240" width="176" height="16" rx="8" fill="#4A4266"/>
+  <!-- approved check -->
+  <path d="M168 320 l40 40 l84 -104" fill="none" stroke="#5BD99B" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- parallel agents -->
+  <circle cx="352" cy="336" r="18" fill="#6E56CF"/>
+  <circle cx="352" cy="384" r="18" fill="#6E56CF" opacity="0.66"/>
+  <circle cx="352" cy="288" r="18" fill="#6E56CF" opacity="0.33"/>
+</svg>

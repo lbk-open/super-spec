@@ -2,5 +2,12 @@
   "name": "super-spec",
   "version": "0.1.1",
   "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails",
-  "skills": "./skills/"
+  "repository": "https://github.com/lbk-open/super-spec",
+  "license": "Apache-2.0",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "SuperSpec",
+    "shortDescription": "Requirement or production alert in, reviewed pull request out",
+    "composerIcon": "./assets/icon.svg"
+  }
 }
