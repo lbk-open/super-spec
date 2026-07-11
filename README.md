@@ -5,6 +5,8 @@ English | [简体中文](README.zh-CN.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/lbk-open/super-spec/ci.yml?branch=main&label=ci)](https://github.com/lbk-open/super-spec/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/lbk-open/super-spec?label=release)](https://github.com/lbk-open/super-spec/releases)
 [![License](https://img.shields.io/github/license/lbk-open/super-spec)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@lbk-open/super-spec?label=npm)](https://www.npmjs.com/package/@lbk-open/super-spec)
+[![skills.sh](https://skills.sh/b/lbk-open/super-spec)](https://skills.sh/lbk-open/super-spec)
 [![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
 
 > A set of spec-driven Agent Skills — one command takes a feature or a fix all the way to production-ready code.
