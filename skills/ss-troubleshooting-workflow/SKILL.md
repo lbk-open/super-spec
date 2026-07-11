@@ -59,7 +59,7 @@ for the rest of the run. Never persist the choice to a project config file.
 
 Cross-service defects — service A errors, root cause lives in service B, or the fix spans both —
 are a frequent multi-repo case. This workflow checks at three points. Full rules in
-`../_references/multi-repo-detection.md` (this table is a condensed copy; the reference file wins
+`../ss-references/multi-repo-detection.md` (this table is a condensed copy; the reference file wins
 on conflict).
 
 | Level | Signal | Action |

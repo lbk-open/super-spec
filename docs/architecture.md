@@ -109,7 +109,8 @@ super-spec/
 │   │   ├── android.md
 │   │   ├── ios.md
 │   │   └── flutter.md
-│   └── _references/
+│   └── ss-references/
+│       ├── SKILL.md
 │       └── <shared-template>.md # shared prompt/reference templates used across
 │                                # workflow, proposal, spec, and multi-agent skills
 └── docs/
@@ -123,9 +124,10 @@ super-spec/
 
 `skills/` is the single source of truth for behavior; nothing here is generated
 from, or duplicated into, a platform-specific format. `skills/ss-guardrails/` and
-`skills/_references/` are not standalone workflows — they're shared material that
+`skills/ss-references/` are not standalone workflows — they're shared material that
 other skills pull in at prompt time via relative paths (`../ss-guardrails/core.md`,
-`../_references/proposal-template.md`). `docs/` is design documentation for
+`../ss-references/proposal-template.md`). Both carry a `SKILL.md` of their own so that
+installers copy them: the `skills` CLI only copies directories that contain one. `docs/` is design documentation for
 humans; it has no runtime role.
 
 ## Skill Catalog
@@ -142,9 +144,11 @@ group into six categories:
 | **Git** | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` | Handle the git mechanics: cut a branch (with an optional isolated worktree), open a pull request once quality gates pass, and tear down the branch/worktree afterward |
 | **Diagnostics** | `ss-inspect` | Root-cause a live issue through a staged, evidence-driven process |
 
-`ss-guardrails` sits outside this table on purpose — it isn't something you invoke
-as a task, it's the shared rulebook the other skills read from. See the next
-section and [guardrails.md](./guardrails.md) for the full rationale.
+`ss-guardrails` and `ss-references` sit outside this table on purpose — they aren't
+things you invoke as a task, they're the shared rulebook and the shared templates the
+other skills read from. Both are skill directories (with a `SKILL.md` each) rather
+than bare folders, because installers only carry directories that contain one. See the
+next section and [guardrails.md](./guardrails.md) for the full rationale.
 
 Not everything in the source material made the cut. Vendor-specific integrations
 (a proprietary chat-tool auth flow, a proprietary telemetry/reporting backend) and

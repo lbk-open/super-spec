@@ -62,7 +62,7 @@ for e in expected:
         fail(f"INSTALL.md expects {e} skills, found {len(skill_dirs)}")
 
 # 5. Sibling relative references resolve
-ref_re = re.compile(r"\.\./(ss-guardrails|_references)/[A-Za-z0-9._-]+\.md")
+ref_re = re.compile(r"\.\./(ss-guardrails|ss-references)/[A-Za-z0-9._-]+\.md")
 for f in pathlib.Path("skills").rglob("*.md"):
     for ref in sorted({m.group(0) for m in ref_re.finditer(f.read_text())}):
         if not (pathlib.Path("skills") / ref[3:]).exists():
@@ -71,9 +71,9 @@ for f in pathlib.Path("skills").rglob("*.md"):
 # 6. Cross-file interface contracts
 contracts = [
     ("**Repositories Involved:**",
-     ["skills/_references/multi-repo-detection.md", "skills/_references/proposal-template.md"]),
+     ["skills/ss-references/multi-repo-detection.md", "skills/ss-references/proposal-template.md"]),
     ("**Repositories Requiring Fix:**",
-     ["skills/_references/multi-repo-detection.md", "skills/ss-inspect/SKILL.md"]),
+     ["skills/ss-references/multi-repo-detection.md", "skills/ss-inspect/SKILL.md"]),
     ("---SS-RESULT---",
      ["skills/ss-coding-workflow/SKILL.md", "skills/ss-multi-repo-workflow/SKILL.md"]),
 ]

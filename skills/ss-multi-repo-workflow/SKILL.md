@@ -30,7 +30,7 @@ execution-stage work is delegated to per-repo sub-processes.
 ## When to Run
 
 Only run this when the user explicitly asks for it, or a single-repo workflow hands off to it
-after multi-repo detection (see `../_references/multi-repo-detection.md`). Do not auto-trigger it
+after multi-repo detection (see `../ss-references/multi-repo-detection.md`). Do not auto-trigger it
 for ordinary single-repo work.
 
 ## Inputs

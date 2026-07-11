@@ -62,7 +62,7 @@ for the rest of the run. Never persist the choice to a project config file.
 ## Multi-Repo Routing
 
 Checked once, before pre-flight — this workflow's input *is* the plan, so multi-repo nature is
-fully decidable at the entrance. Full rules in `../_references/multi-repo-detection.md` (this
+fully decidable at the entrance. Full rules in `../ss-references/multi-repo-detection.md` (this
 table is a condensed copy; the reference file wins on conflict).
 
 | Level | Signal | Action |

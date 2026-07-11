@@ -78,7 +78,7 @@ Checking off a task's checkbox in the plan file the moment it completes does dou
 
 ## Role Prompt Templates
 
-Every implementer dispatch and every reviewer dispatch follows the same prompt shape, kept as a shared template in `skills/_references/` rather than rewritten inline each time a skill needs one. `implementer-prompt.md` is the coding side of this; `ss-code-review` carries the equivalent structure for each reviewer role it dispatches. The shared shape exists because the zero-context assumption above imposes the same requirements on every dispatch, no matter which skill is doing the dispatching:
+Every implementer dispatch and every reviewer dispatch follows the same prompt shape, kept as a shared template in `skills/ss-references/` rather than rewritten inline each time a skill needs one. `implementer-prompt.md` is the coding side of this; `ss-code-review` carries the equivalent structure for each reviewer role it dispatches. The shared shape exists because the zero-context assumption above imposes the same requirements on every dispatch, no matter which skill is doing the dispatching:
 
 - **The full task or diff, pasted in** — never a path for the subagent to go read itself.
 - **Scene-setting context** — where this piece fits in the larger plan or change, so the agent isn't just executing in a vacuum.

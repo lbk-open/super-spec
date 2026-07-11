@@ -63,7 +63,7 @@ After reading the PRD, identify what's relevant to **this repository**:
    - What this repository WILL implement (in-scope functionality, pages, or endpoints)
    - What belongs to other repositories (out-of-scope, marked as an external dependency)
    - Integration points with other repositories (APIs to call/expose, cross-app navigation, shared components)
-4. **Record the repository list.** The proposal MUST carry a structured field, **`Repositories Involved:`**, in its summary-design section — every repository whose code must change for this requirement (write the current repo's name if it's single-repo). Do not count a shared API-contract repo or spec submodules. Downstream workflows read this field for multi-repo routing — see `../_references/multi-repo-detection.md`.
+4. **Record the repository list.** The proposal MUST carry a structured field, **`Repositories Involved:`**, in its summary-design section — every repository whose code must change for this requirement (write the current repo's name if it's single-repo). Do not count a shared API-contract repo or spec submodules. Downstream workflows read this field for multi-repo routing — see `../ss-references/multi-repo-detection.md`.
 
 If the in-scope work involves **3+ independent subsystems**, **5+ independent pages/screens**, or **spans 2+ sub-apps/micro-frontend modules**:
 - Suggest splitting into multiple independent proposals.
@@ -87,7 +87,7 @@ If the requirement is focused, proceed.
 
 ### Step 3: Write the Proposal
 
-Generate the proposal following the template in `../_references/proposal-template.md`. Read that file first, then fill in each section — skipping only the subsections that plainly don't apply to this repository's shape (e.g., a pure backend service skips the UI-contract subsection; a pure frontend app skips the data-model subsection).
+Generate the proposal following the template in `../ss-references/proposal-template.md`. Read that file first, then fill in each section — skipping only the subsections that plainly don't apply to this repository's shape (e.g., a pure backend service skips the UI-contract subsection; a pure frontend app skips the data-model subsection).
 
 The output is a single Markdown document.
 
@@ -153,7 +153,7 @@ If your tool supports spawning a subagent with fresh context:
 
 - Spawn an independent review agent with:
   - Input: the generated proposal Markdown file.
-  - Reference: `../_references/proposal-writing.md` (quality-standards checklist).
+  - Reference: `../ss-references/proposal-writing.md` (quality-standards checklist).
   - Task: review the proposal against every checklist item and report issues.
 - The review agent must not have seen the generation process — fresh context is what makes the review independent.
 - Fix any issues the reviewer finds before proceeding to output.

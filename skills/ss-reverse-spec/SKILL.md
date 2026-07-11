@@ -22,7 +22,7 @@ Optional: `--include <path>` / `--exclude <path>` to scope the scan.
 
 Check whether `openspec/specs/` and `openspec/changes/` already exist. If this repository
 has no OpenSpec structure yet, create it first by following
-`../_references/openspec-skeleton.md`, then continue below. If the skeleton already
+`../ss-references/openspec-skeleton.md`, then continue below. If the skeleton already
 exists, skip straight to the requested mode.
 
 ## Modes

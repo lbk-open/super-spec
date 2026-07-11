@@ -64,8 +64,9 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 - **OpenCode** —— `npx skills add lbk-open/super-spec -a opencode`。更新执行
   `npx skills update`。
 - **手动兜底（Codex / Pi / OpenCode）** —— 将 `skills/*` 拷贝到
-  `~/.agents/skills/`（三者共用该发现路径），并保持 `ss-*` 目录与
-  `_references/` 同级。项目级安装则放入 `<repo>/.agents/skills/`。
+  `~/.agents/skills/`（三者共用该发现路径），并保持所有 `ss-*` 目录同级——
+  其中 `ss-guardrails` 与 `ss-references` 是其他技能运行时读取的共享库，
+  缺一不可。项目级安装则放入 `<repo>/.agents/skills/`。
 
 完整的安装、升级与卸载说明见 [INSTALL.md](INSTALL.md)。
 
@@ -155,7 +156,7 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 | 多代理 | `ss-coding`、`ss-code-review` |
 | Git 交付 | `ss-create-branch`、`ss-create-pr`、`ss-cleanup` |
 | 诊断 | `ss-inspect` |
-| 共享 | `ss-guardrails`（安全/质量/防错清单） |
+| 共享库 | `ss-guardrails`（安全/质量/防错清单）、`ss-references`（其他技能运行时读取的共享模板） |
 
 ## 与同类项目的比较
 
@@ -211,7 +212,7 @@ agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
   （项目级安装或 OpenCode 备选路径请相应调整）：
 
   ```bash
-  rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references
+  rm -rf ~/.agents/skills/ss-*
   ```
 
 SuperSpec 在 skills 目录之外不保存任何状态，也从不写入用户项目，

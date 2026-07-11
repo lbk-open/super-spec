@@ -110,22 +110,25 @@ cp -R "$TMP/super-spec/skills/"* "$TARGET/"
 rm -rf "$TMP"
 ```
 
-**Do not rename or flatten the copied directories.** Skills reference each other by
-sibling relative paths (`../ss-guardrails/core.md`, `../_references/<file>.md`); the
-`ss-*` directories and `_references/` must stay side by side in the same parent.
+**Install all of them, and do not rename or flatten the copied directories.** Skills
+reference each other by sibling relative paths (`../ss-guardrails/core.md`,
+`../ss-references/<file>.md`), so every `ss-*` directory must stay side by side in the
+same parent. `ss-guardrails` and `ss-references` are shared libraries rather than
+workflows — nobody invokes them directly, but the other skills stop working without
+them.
 
 **Verify:**
 
 ```bash
-ls "$TARGET" | grep -c '^ss-'     # expected: 19
-test -f "$TARGET/ss-guardrails/core.md" && test -d "$TARGET/_references" && echo "layout OK"
+ls "$TARGET" | grep -c '^ss-'     # expected: 20
+test -f "$TARGET/ss-guardrails/core.md" && test -f "$TARGET/ss-references/proposal-template.md" && echo "layout OK"
 ```
 
 If OpenCode is among the targets, you can additionally confirm discovery
 (run from any git repository):
 
 ```bash
-opencode debug skill 2>/dev/null | grep -o '"name": *"ss-[a-z-]*"' | sort -u | wc -l   # expected: 19
+opencode debug skill 2>/dev/null | grep -o '"name": *"ss-[a-z-]*"' | sort -u | wc -l   # expected: 20
 ```
 
 Notes per platform — nothing extra to do, just context:
@@ -178,13 +181,13 @@ Tell the user, concretely:
   `claude plugin marketplace remove super-spec`.
 - **Codex (plugin route):** `codex plugin remove super-spec`, then optionally
   `codex plugin marketplace remove super-spec`.
-- **Pi:** `pi remove git:github.com/lbk-open/super-spec`.
+- **Pi:** `pi remove npm:@lbk-open/super-spec`.
 - **OpenCode (`skills` CLI):** `npx skills remove <skill-name>` per skill, or delete the
   copies it created.
 - **Manual copies:** remove exactly what Step 3 copied:
 
   ```bash
-  rm -rf "$TARGET"/ss-* "$TARGET/_references"
+  rm -rf "$TARGET"/ss-*
   ```
 
   Nothing else is written anywhere — SuperSpec keeps no state outside the skills

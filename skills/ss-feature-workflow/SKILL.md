@@ -87,7 +87,7 @@ directly from the requirement.
 
 A feature's multi-repo nature may be visible up front, or only surface once the proposal or plan
 is drafted — this workflow checks at three points. Full rules and hand-off protocol live in
-`../_references/multi-repo-detection.md` (this table is a condensed copy; the reference file
+`../ss-references/multi-repo-detection.md` (this table is a condensed copy; the reference file
 wins on conflict).
 
 | Level | Signal | Action |

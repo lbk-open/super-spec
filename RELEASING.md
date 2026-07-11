@@ -55,7 +55,7 @@ that version.
 - every `skills/ss-*/` directory has a `SKILL.md` with exactly `name` +
   `description` frontmatter, `name` matching the directory;
 - the skill count matches what `INSTALL.md` asserts in its verify steps;
-- every `../ss-guardrails/…` and `../_references/…` reference resolves;
+- every `../ss-guardrails/…` and `../ss-references/…` reference resolves;
 - the cross-file interface contracts are intact (`**Repositories Involved:**`,
   `**Repositories Requiring Fix:**`, `---SS-RESULT---`);
 - distributed content (`skills/`, `docs/`, `INSTALL.md`) stays English-only;

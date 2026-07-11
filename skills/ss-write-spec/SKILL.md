@@ -36,7 +36,7 @@ file paths always stay in English.
 
 Check whether `openspec/specs/` and `openspec/changes/` already exist. If this repository
 has no OpenSpec structure yet, create it first by following
-`../_references/openspec-skeleton.md`, then continue with Step 1 below.
+`../ss-references/openspec-skeleton.md`, then continue with Step 1 below.
 
 ## Process
 

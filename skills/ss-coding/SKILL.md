@@ -182,7 +182,7 @@ Parallel dispatch limit: 5 subagents at a time. For long operations (build, inst
 ### Step 3: Per-Task Lifecycle
 
 For every task, whether parallel or sequential:
-1. Dispatch an implementer subagent using the `../_references/implementer-prompt.md` template.
+1. Dispatch an implementer subagent using the `../ss-references/implementer-prompt.md` template.
 2. Handle the status it reports:
    - `DONE` → task complete, update the plan checkbox.
    - `DONE_WITH_CONCERNS` → check the `blocking_concerns` field: non-empty means address it first and re-dispatch; only `observations` means the task is complete (log the observations for the final report).
@@ -309,7 +309,7 @@ Never ignore `BLOCKED`, `PLAN_ISSUE`, or `CONFLICT` — something must change be
 
 ## Prompt Template
 
-Subagent prompts live in `../_references/`:
+Subagent prompts live in `../ss-references/`:
 - `implementer-prompt.md` — the implementer subagent prompt.
 
 Review prompts are managed by `ss-code-review` — this skill no longer dispatches its own reviewer subagents; the earlier per-task review roles have been absorbed into `ss-code-review`'s General CR, compliance, and Integration Review agents.

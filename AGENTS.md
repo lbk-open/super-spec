@@ -51,12 +51,21 @@ agent-executable install/upgrade/uninstall walkthrough.
   placeholders, no platform-specific fields or tool names — use an "Inputs" section
   and generic tool descriptions ("spawn a subagent").
 - Cross-skill file references use **sibling relative paths** (`../ss-guardrails/core.md`,
-  `../_references/<file>.md`) because installs copy `skills/*` flat into
+  `../ss-references/<file>.md`) because installs copy `skills/*` flat into
   `~/.agents/skills/` — the sibling layout must survive that copy. Refer to other
   skills by name ("run the `ss-plan` skill"), never by slash-command syntax.
-- `skills/ss-guardrails/` holds the safety/quality/anti-error checklists (core.md +
-  7 per-language files), read by other skills at runtime. `skills/_references/` holds
-  shared templates used across workflow, proposal, spec, and multi-agent skills.
+- **Shared material must live in an `ss-*` skill directory with its own `SKILL.md`.**
+  The `skills` CLI (`npx skills add`, the OpenCode channel) copies *only* directories
+  that contain a `SKILL.md`; a bare folder is silently dropped and every
+  `../<folder>/…` reference breaks. Skill names must also match
+  `^[a-z0-9]+(-[a-z0-9]+)*$`, so an underscore-prefixed directory is not a legal
+  escape hatch. Two such library skills exist, neither invoked directly by users:
+  `skills/ss-guardrails/` (safety/quality/anti-error checklists — core.md plus 7
+  per-language files) and `skills/ss-references/` (shared templates for the workflow,
+  proposal, spec, and multi-agent skills).
+- Sibling references only resolve when the **whole bundle** is installed. Installing a
+  single skill on its own leaves its `../ss-guardrails/…` and `../ss-references/…`
+  reads dangling — INSTALL.md says so, and it must keep saying so.
 
 ### Orchestration model
 
@@ -78,7 +87,7 @@ These exact strings couple producers to consumers — renaming one side silently
 breaks detection logic:
 
 - `**Repositories Involved:**` (produced by ss-proposal templates; consumed by
-  `_references/multi-repo-detection.md` and the workflows)
+  `ss-references/multi-repo-detection.md` and the workflows)
 - `**Repositories Requiring Fix:**` (produced by ss-inspect's report)
 - `---SS-RESULT---` result block (ss-coding-workflow → ss-multi-repo-workflow)
 

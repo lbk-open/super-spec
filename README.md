@@ -65,7 +65,8 @@ Prefer doing it by hand? The short version:
 - **OpenCode** — `npx skills add lbk-open/super-spec -a opencode`. Update with
   `npx skills update`.
 - **Manual fallback (Codex / Pi / OpenCode)** — copy `skills/*` into `~/.agents/skills/`
-  (all three scan it), keeping the `ss-*` directories and `_references/` side by side.
+  (all three scan it), keeping every `ss-*` directory side by side — including the
+  `ss-guardrails` and `ss-references` libraries the other skills read at runtime.
   Project-scoped: `<repo>/.agents/skills/`.
 
 Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
@@ -179,7 +180,7 @@ What actually happens when the key skills run:
 | Multi-agent | `ss-coding`, `ss-code-review` |
 | Git delivery | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` |
 | Diagnostics | `ss-inspect` |
-| Shared | `ss-guardrails` (safety/quality/anti-error checklists) |
+| Shared libraries | `ss-guardrails` (safety/quality/anti-error checklists), `ss-references` (templates other skills read at runtime) |
 
 ## How it compares
 
@@ -236,7 +237,7 @@ Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
   (adjust the path if you installed project-scoped or to an OpenCode alternate location):
 
   ```bash
-  rm -rf ~/.agents/skills/ss-* ~/.agents/skills/_references
+  rm -rf ~/.agents/skills/ss-*
   ```
 
 SuperSpec keeps no state outside the skills directory and never writes into your
