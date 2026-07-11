@@ -1,5 +1,5 @@
 {
-  "name": "super-spec",
+  "name": "@lbk-open/super-spec",
   "version": "0.1.0",
   "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails",
   "license": "Apache-2.0",

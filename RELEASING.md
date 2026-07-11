@@ -63,15 +63,21 @@ that version.
 
 ## Publishing to npm
 
-Pi resolves `pi install npm:super-spec` through the npm registry, and the package
-also lists itself in Pi's gallery at <https://pi.dev/packages> (any package with the
-`pi-package` keyword is indexed automatically — there is nothing to submit). So once
-the GitHub Release is out, publish the same version:
+Pi resolves `pi install npm:@lbk-open/super-spec` through the npm registry, and the
+package also lists itself in Pi's gallery at <https://pi.dev/packages> (any package
+with the `pi-package` keyword is indexed automatically — there is nothing to submit).
+So once the GitHub Release is out, publish the same version:
 
 ```bash
 npm pack --dry-run   # confirm the tarball holds only skills/, docs/, and the docs files
 npm publish --access public
 ```
+
+The npm package is **scoped** (`@lbk-open/super-spec`) while the plugin name stays
+`super-spec` everywhere else. The unscoped name is unavailable: npm's similarity
+check rejects it as too close to the pre-existing `superspec` package. Do not
+"fix" the name in `package.json` to match the plugin manifests — publishing will
+fail with a 403.
 
 The `files` allowlist in `package.json` decides what ships. Do not remove it and
 fall back to ignore rules: npm does not read the global gitignore, so local
