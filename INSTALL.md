@@ -72,11 +72,15 @@ super-spec` (then confirm in the `/plugins` panel inside a Codex session — the
 refreshes the marketplace snapshot; the panel shows whether the installed plugin picked
 it up).
 
-**Pi — git package (install without a version pin so updates work):**
+**Pi — npm package (install without a version pin so updates work):**
 
 ```bash
-pi install git:github.com/lbk-open/super-spec
+pi install npm:@lbk-open/super-spec
 ```
+
+The npm package is scoped; the plugin is named `super-spec` on every other channel.
+Installing straight from git also works if the user prefers it:
+`pi install git:github.com/lbk-open/super-spec`.
 
 Verify with `pi list`. Updates later: `pi update --all`.
 

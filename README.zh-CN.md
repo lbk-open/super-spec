@@ -59,7 +59,7 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 - **OpenAI Codex** —— `codex plugin marketplace add https://github.com/lbk-open/super-spec`，
   随后 `codex plugin add super-spec@super-spec`。更新执行
   `codex plugin marketplace upgrade super-spec`。
-- **Pi** —— `pi install git:github.com/lbk-open/super-spec`（不指定版本号）。
+- **Pi** —— `pi install npm:@lbk-open/super-spec`（不指定版本号）。
   更新执行 `pi update --all`。
 - **OpenCode** —— `npx skills add lbk-open/super-spec -a opencode`。更新执行
   `npx skills update`。
@@ -206,7 +206,7 @@ agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
 
 - **Codex** —— `codex plugin remove super-spec`，随后可选执行
   `codex plugin marketplace remove super-spec`。
-- **Pi** —— `pi remove git:github.com/lbk-open/super-spec`。
+- **Pi** —— `pi remove npm:@lbk-open/super-spec`。
 - **手动拷贝安装（Codex / Pi / OpenCode）** —— 删除安装时拷贝的内容即可
   （项目级安装或 OpenCode 备选路径请相应调整）：
 

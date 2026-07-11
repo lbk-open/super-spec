@@ -60,7 +60,7 @@ Prefer doing it by hand? The short version:
 - **OpenAI Codex** — `codex plugin marketplace add https://github.com/lbk-open/super-spec`,
   then `codex plugin add super-spec@super-spec`. Update with
   `codex plugin marketplace upgrade super-spec`.
-- **Pi** — `pi install git:github.com/lbk-open/super-spec` (no version pin). Update with
+- **Pi** — `pi install npm:@lbk-open/super-spec` (no version pin). Update with
   `pi update --all`.
 - **OpenCode** — `npx skills add lbk-open/super-spec -a opencode`. Update with
   `npx skills update`.
@@ -231,7 +231,7 @@ Issues and PRs welcome. Repository conventions live in [AGENTS.md](AGENTS.md).
 
 - **Codex** — `codex plugin remove super-spec`, then optionally
   `codex plugin marketplace remove super-spec`.
-- **Pi** — `pi remove git:github.com/lbk-open/super-spec`.
+- **Pi** — `pi remove npm:@lbk-open/super-spec`.
 - **Manual copies (Codex / Pi / OpenCode)** — remove exactly what the install copied
   (adjust the path if you installed project-scoped or to an OpenCode alternate location):
 
