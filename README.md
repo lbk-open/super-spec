@@ -7,7 +7,7 @@ English | [简体中文](README.zh-CN.md)
 [![License](https://img.shields.io/github/license/lbk-open/super-spec)](LICENSE)
 [![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
 
-> Spec-driven development toolkit for AI coding agents.
+> A set of spec-driven Agent Skills — one command takes a feature or a fix all the way to production-ready code.
 
 SuperSpec packages battle-tested engineering workflows as portable
 [Agent Skills](https://agentskills.io): end-to-end feature workflows, multi-agent
@@ -172,7 +172,7 @@ What actually happens when the key skills run:
 ## Skill catalog
 
 | Category | Skills |
-|---|---|
+| --- | --- |
 | Living specs | `ss-write-spec`, `ss-archive`, `ss-list-changes`, `ss-show-spec`, `ss-trace-spec`, `ss-reverse-spec` |
 | Proposals & planning | `ss-proposal`, `ss-plan` |
 | Workflows | `ss-feature-workflow`, `ss-coding-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` |
@@ -188,7 +188,7 @@ emphasize different layers. They're complementary more than competing; the notes
 below describe the differences, not a ranking.
 
 | Project | Primary focus | How it differs from SuperSpec |
-|---|---|---|
+| --- | --- | --- |
 | [superpowers](https://github.com/obra/superpowers) | A rich library of process skills (brainstorming, TDD, debugging, subagent-driven development) that instill working discipline | Focuses on *how to work* at the practice level; SuperSpec adds spec lifecycle management, end-to-end delivery workflows (requirement → PR), and per-language guardrails. Claude Code-first with adapters for other agents; SuperSpec ships one SKILL.md source for four runtimes |
 | [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Spec change management: a CLI and conventions for proposing, approving, and archiving spec deltas | Manages *what to build* and leaves implementation to your agent; SuperSpec adopts its spec convention (fully compatible) and adds the execution half — planning, multi-agent coding, review, and delivery |
 | [spec-kit](https://github.com/github/spec-kit) | Spec-driven development driven by the `specify` CLI: constitution → specify → plan → tasks templates across many agents | Workflow advances through CLI-generated templates and scripts; SuperSpec keeps orchestration in prompts executed by the model itself, layers in multi-agent review and guardrails, and is built around living specs that outlive a single feature |
@@ -200,7 +200,7 @@ conflict — the `ss-` prefix keeps names disjoint.
 ## Design documentation
 
 | Doc | What it covers |
-|---|---|
+| --- | --- |
 | [architecture.md](docs/architecture.md) | Design philosophy, one-source/four-runtimes layout, skill catalog |
 | [workflows.md](docs/workflows.md) | Workflow orchestration, gates, full/lite modes, resumability |
 | [multi-agent.md](docs/multi-agent.md) | Multi-agent TDD and parallel review design |

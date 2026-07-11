@@ -4,3 +4,4 @@
 .ruff_cache/
 node_modules/
 __pycache__/
+.docs/
