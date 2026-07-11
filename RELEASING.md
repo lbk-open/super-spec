@@ -1,16 +1,18 @@
 # Releasing SuperSpec
 
-Releases here are lightweight by design. There is nothing to build and nothing to
-publish to a registry: every distribution channel — the Claude Code plugin
-marketplace, the Codex plugin marketplace, Pi's git packages, and the `npx skills`
-CLI — pulls straight from this git repository. A release is therefore exactly four
-things, and automation handles all of them:
+Releases here are lightweight by design. There is nothing to build, and most
+distribution channels — the Claude Code plugin marketplace, the Codex plugin
+marketplace, and the `npx skills` CLI — pull straight from this git repository. A
+release is therefore four things, and automation handles all of them:
 
 1. a semver bump, kept in sync across `.claude-plugin/plugin.json`,
    `.codex-plugin/plugin.json`, and `package.json`;
 2. an updated `CHANGELOG.md`;
 3. a `vX.Y.Z` tag;
 4. a GitHub Release with generated notes.
+
+Plus one manual step, because Pi resolves packages through npm: publishing the
+tarball to the registry — see [Publishing to npm](#publishing-to-npm) below.
 
 ## The normal flow: merge one PR
 
@@ -59,9 +61,29 @@ that version.
 - distributed content (`skills/`, `docs/`, `INSTALL.md`) stays English-only;
 - when the `claude` CLI is available (locally), `claude plugin validate .` passes.
 
+## Publishing to npm
+
+Pi resolves `pi install npm:super-spec` through the npm registry, and the package
+also lists itself in Pi's gallery at <https://pi.dev/packages> (any package with the
+`pi-package` keyword is indexed automatically — there is nothing to submit). So once
+the GitHub Release is out, publish the same version:
+
+```bash
+npm pack --dry-run   # confirm the tarball holds only skills/, docs/, and the docs files
+npm publish --access public
+```
+
+The `files` allowlist in `package.json` decides what ships. Do not remove it and
+fall back to ignore rules: npm does not read the global gitignore, so local
+artifacts (`.claude/`, editor state) leak into the tarball without it.
+
+**Registry auth.** npm refuses to publish unless the account has 2FA enabled *or*
+the token is a granular access token with "bypass 2FA". Use a granular token scoped
+to read-and-write, which also lets CI publish unattended.
+
 ## After a release: how users get it
 
-No publishing steps — each channel pulls on its own schedule:
+Each channel pulls on its own schedule:
 
 | Channel | How the update reaches users |
 |---|---|
@@ -73,8 +95,9 @@ No publishing steps — each channel pulls on its own schedule:
 
 ## One-time repository setup
 
-Already configured in-tree, but the GitHub settings below must be enabled once
-(Settings → Actions → General), or release-please cannot open its PR:
+Already configured in-tree, but these must be enabled once or release-please cannot
+open its PR. Note the toggles live at the **organization** level (Settings → Actions
+→ General); a repository cannot loosen an org policy that disables them:
 
 - **Workflow permissions**: "Read and write permissions"
 - **Allow GitHub Actions to create and approve pull requests**: checked
