@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/lbk-open/super-spec/compare/v0.1.0...v0.1.1) (2026-07-11)
+
+
+### Bug Fixes
+
+* ship shared templates as the ss-references skill ([ec77238](https://github.com/lbk-open/super-spec/commit/ec7723811942b699ece9546cdae80889eb4eb7fc))
+
 ## 0.1.0 (2026-07-11)
 
 Initial public release of SuperSpec: 19 spec-driven Agent Skills that run on Claude
