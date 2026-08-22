@@ -9,7 +9,7 @@ Execute an implementation plan by dispatching multiple subagents in parallel, ea
 
 **Core architecture:** the orchestrator (you) never writes code. You read the plan, dispatch subagents, track progress, and collect results. All code is written by implementer subagents.
 
-**Zero-context assumption:** each implementer subagent starts with a fresh context and no knowledge of the codebase. You must hand it everything it needs — full task text, context, specs, and a scope boundary.
+**Fresh-context assumption:** each implementer subagent starts with no chat history. Give it the authoritative plan path plus exact task number/heading, concise scene-setting context, applicable spec paths, interfaces/dependencies, cwd, scope boundary, and verification commands. The implementer reads only that task and its referenced material from the repository instead of receiving a duplicated full-task payload.
 
 ## Inputs
 
@@ -34,6 +34,8 @@ Violating any of these means stop and escalate to the user:
 8. **Specs are binding.** Any specs discovered for the repository apply to every implementer prompt.
 9. **Never implement directly on the trunk branch (main/master).** If the current branch is main/master, stop and ask the user to create a feature branch first (the `ss-create-branch` skill can do this).
 10. **Deliver full scope — no silent reduction.** Execute every task in the plan. Never skip a task, stub out logic, or downgrade an implementation to a "simplified version" to finish faster, and never re-scope the plan into "MVP now, phase two later" on your own initiative. If the full plan can't be completed, stop and report the blocker — never present partial work as complete. Exception: scope the user explicitly cut, deferred, or accepted as blocked. Record that decision under a "User-Confirmed Scope Adjustments" section in the plan file (the persistent record the downstream review reads) and repeat it in the final report.
+11. **Plan freshness is mandatory.** For plan input, validate canonical `**BASE_SHA:**` against current repository drift before first dispatch. Never execute stale file/symbol/interface instructions blindly.
+12. **Checkboxes are hints, not completion evidence.** On resume, validate each checked task's exact plan/task/base identity, reachable commit, scoped files, and task verification before skipping it. Invalid or stale checks are reopened.
 
 ## Input Routing
 
@@ -106,6 +108,42 @@ Before dispatching any implementer:
 
 If the project has no `openspec/` structure yet, this discovery step simply finds nothing — creating that structure is out of scope here (see the `ss-write-spec` / `ss-reverse-spec` skills).
 
+## Baseline Freshness Gate
+
+For a plan-file input, run this before the first implementer dispatch:
+
+1. Read canonical `**BASE_SHA:**` from the plan and validate it as 7–64 lowercase hex. For a
+   multi-repo sub-plan, use that repository's own ref. If missing/invalid, return to `ss-plan` for a
+   refresh (autonomous default) or ask the user; never silently bless current HEAD.
+2. Compare committed and uncommitted changes since `BASE_SHA` against every planned file, referenced
+   symbol/interface, and dependency. Ignore plan/spec artifact edits that do not affect code
+   assumptions.
+3. No relevant drift → continue and pass `BASE_SHA` in every implementer dispatch.
+4. Relevant drift from external work or changed interfaces → refresh the affected task/plan through
+   `ss-plan` before dispatch. Relevant drift that is clearly this plan's already-completed task work
+   follows resume checks instead of resetting progress.
+5. If freshness cannot be determined confidently, stop with `PLAN_ISSUE`; do not ask implementers to
+   transcribe possibly stale exact code.
+
+`BASE_SHA` proves only which code snapshot planning read. It is not test evidence and never replaces
+`TEST_VERIFIED_SHA` or `delivered_ref`.
+
+### Checked-Task Resume Validation
+
+Before dispatch, validate every pre-checked task independently:
+
+1. Require evidence that echoes the same plan path, exact task heading, and `BASE_SHA`; identifies a
+   commit reachable from current HEAD; lists only task-scoped changed files; and records its targeted
+   test/lint results.
+2. Compare the reachable task commit and current files with the task's Files/Steps/Acceptance. A
+   missing commit/report, scope mismatch, failed/stale verification, externally changed task file, or
+   checkbox copied from another run invalidates completion.
+3. Reopen each invalid task (`- [ ]`) and dispatch it normally. Preserve valid completed tasks and
+   their evidence; do not redo them merely because the session restarted.
+4. Even when every task remains validly checked, run the full test, spec-compliance, full-scope, and
+   comprehensive-review gates for the assembled current HEAD unless matching current-HEAD evidence
+   already satisfies those gates.
+
 ## Git Strategy
 
 **Environment:** work in whatever directory the branch-creation step produced — an isolated worktree or the main checkout in place both work identically here. This skill never creates or removes worktrees or branches itself. Before starting, confirm the guardrails files are present (`../ss-guardrails/core.md` exists); if not, proceed without guardrails injection and note it in the final report.
@@ -165,8 +203,12 @@ digraph process {
 
 ### Step 1: Read the Plan & Extract Tasks
 
-1. Read the plan file once; extract every task with its full text.
-2. Note parallel-group assignments and dependency relationships.
+1. Read the plan file once; catalog every exact task number/heading, checkbox state, file scope,
+   referenced specs, interfaces, dependencies, verification commands, and parallel group. Keep the
+   plan path as the authoritative task source; do not duplicate full task bodies into controller
+   prompts.
+2. Validate checked-task resume evidence, reopen stale/invalid checks, then note parallel-group
+   assignments and dependency relationships for the remaining tasks.
 3. Order groups by dependency (group A before group B if B depends on A).
 4. Mark the plan file with progress as tasks complete (update checkboxes).
 
@@ -300,7 +342,7 @@ Upgrade signals: a task touches 4+ files → upgrade; `BLOCKED` returned → ret
 
 - **`DONE`** — task complete; update the plan checkbox and proceed.
 - **`DONE_WITH_CONCERNS`** — check the structured report: a non-empty `blocking_concerns` field means address it first and re-dispatch; only `observations` means the task is complete (log observations for the final report).
-- **`NEEDS_CONTEXT`** — supply the missing context and re-dispatch: relevant code from other files (read and paste it in), architecture context from the plan, and any specs that apply.
+- **`NEEDS_CONTEXT`** — supply the missing context and re-dispatch: authorize/reference the exact relevant path:symbol, add concise architecture/interface context, and list any additional specs. Paste only the smallest necessary excerpt when the child cannot read the reference directly.
 - **`BLOCKED`** — escalation ladder: (1) provide more context and re-dispatch on the same model; (2) re-dispatch with a more capable model; (3) break the task into smaller pieces; (4) escalate to the user, only after steps 1-3 fail.
 - **`PLAN_ISSUE`** — the plan has factual errors; see "Plan Correction."
 - **`CONFLICT`** — a git conflict with a parallel agent; see "Git Strategy."
@@ -315,11 +357,16 @@ Subagent prompts live in `../ss-references/`:
 Review prompts are managed by `ss-code-review` — this skill no longer dispatches its own reviewer subagents; the earlier per-task review roles have been absorbed into `ss-code-review`'s General CR, compliance, and Integration Review agents.
 
 When dispatching implementers, you must:
-- paste the full task text into the prompt — never make a subagent read the plan file itself;
-- include scene-setting context (where this task fits in the overall plan);
+- pass the canonical plan path and exact task number/heading; require the subagent to read that task,
+  every spec/reference it names, and every repository-spec/guardrail path listed in the dispatch —
+  but no unrelated task sections — before coding;
+- include `BASE_SHA`, concise scene-setting context, prerequisite outputs, and interface/dependency
+  notes needed to interpret the task;
 - include relevant spec file paths, including the guardrails paths from Specs & Commands Discovery;
-- include the file paths the subagent is allowed to touch (its scope boundary);
-- include `TEST_COMMAND` and `LINT_COMMAND` so it can verify its own work.
+- include the file paths the subagent is allowed to touch (its scope boundary), cwd, `TEST_COMMAND`,
+  and `LINT_COMMAND`;
+- treat a missing/ambiguous task heading or mismatch between the referenced task and dispatch scope as
+  `PLAN_ISSUE`, never as permission to infer scope.
 
 ## Example Workflow
 
@@ -331,14 +378,14 @@ Orchestrator: executing plan docs/plans/2026-05-10-user-payment.md
   - LINT_COMMAND: mvn checkstyle:check
   - Branch: feat/user-payment ✓ (not main)
 
-[Read plan, extract 5 tasks with full text]
+[Read plan, catalog 5 exact task headings/scopes; validate BASE_SHA]
 [Group A (parallel): Task 1, 2, 3 | Group B (sequential): Task 4, 5]
 
 --- Group A: dispatch 3 implementers in parallel ---
 
 Task 1 → Implementer:
   Response: NEEDS_CONTEXT — "need to see the existing PaymentService interface"
-  Orchestrator reads PaymentService.java, pastes it in, re-dispatches.
+  Orchestrator adds the exact PaymentService.java interface reference and concise contract context, then re-dispatches.
   Response: DONE
     blocking_concerns: (none)
     observations: "PaymentService.java is 400 lines, getting large"
@@ -403,7 +450,7 @@ Files: 8 (3 created, 5 modified)
 | Orchestrator edits code directly | pollutes context, loses review | always dispatch a subagent |
 | Dispatching per-task reviewer subagents | redundant with `ss-code-review`, wastes time | let implementers self-check; review collectively at the end |
 | Dispatching 6+ parallel subagents | resource contention, conflicts | max 5 concurrent |
-| Making a subagent read the plan file | wastes context, may misparse | paste the full task text |
+| Pasting every full task into dispatch prompts | duplicates the authoritative artifact and can drift | pass plan path + exact task heading + concise context; validate scope before dispatch |
 | Retrying without changing anything | definition of insanity | change context/model/scope first |
 | Skipping the `ss-code-review` invocation | issues compound, no external review | always invoke it after tests pass |
 | Pausing between tasks to ask the user | wastes time | continuous execution until done/blocked |

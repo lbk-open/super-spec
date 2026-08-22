@@ -9,12 +9,12 @@ English | [简体中文](README.zh-CN.md)
 [![skills.sh](https://skills.sh/b/lbk-open/super-spec)](https://skills.sh/lbk-open/super-spec)
 [![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
 
-> A set of spec-driven Agent Skills — one command takes a feature or a fix all the way to production-ready code.
+> Spec-driven Agent Skills that take a feature or fix through planning, implementation, verification, review, and delivery.
 
-SuperSpec packages battle-tested engineering workflows as portable
+SuperSpec packages structured engineering workflows as portable
 [Agent Skills](https://agentskills.io): end-to-end feature workflows, multi-agent
 TDD coding and parallel code review, living specs that evolve with your code, and
-guardrails that keep AI-generated code safe and correct.
+guardrails that make safety and correctness checks explicit.
 
 Works with **Claude Code**, **OpenAI Codex**, **Pi**, and **OpenCode** — one
 `SKILL.md` source, no per-platform builds. It draws on ideas from two projects we
@@ -75,10 +75,10 @@ Full details, upgrade, and uninstall steps: [INSTALL.md](INSTALL.md).
 
 ## Why SuperSpec
 
-- **Production-ready output, even off frontier models.** The pipeline — spec →
-  plan → TDD implementation → parallel multi-dimensional review → guardrails —
-  is designed to extract dependable code from mid-tier models, rather than betting
-  on a single top-tier model getting everything right in one shot.
+- **Quality through process, not model prestige.** The pipeline — spec → plan →
+  TDD implementation → parallel multi-dimensional review → guardrails — combines
+  explicit acceptance, verification evidence, and review instead of betting on a
+  single model getting everything right in one shot.
 - **The model runs the workflow, not a tool.** Workflows are markdown instructions
   the agent itself executes: thin orchestration, human gates, resumability. There
   is no orchestrator CLI, state machine, or code generator to install — if your
@@ -119,9 +119,10 @@ What actually happens when the key skills run:
   implement and verify test-first. The plan file doubles as persistent state for
   resuming later.
 - **`ss-coding`** — reads the plan, groups independent tasks, and dispatches them
-  to parallel implementer subagents. Each subagent gets the full task text, the
-  relevant delta specs, and the guardrails pasted into its prompt, and works
-  test-first. When all tasks land, it runs the test suite, invokes
+  to parallel implementer subagents. Each subagent gets the canonical plan path
+  and exact task heading, `BASE_SHA`, concise dependency/interface context, scope,
+  verification commands, and applicable spec/guardrail paths, then reads only
+  that task and works test-first. When all tasks land, it runs the test suite, invokes
   `ss-code-review`, and loops on the fix list until the verdict is APPROVED —
   then reports a test-verified commit plus a manual acceptance checklist.
 - **`ss-code-review`** — fans the diff out to parallel reviewers with distinct
@@ -132,11 +133,15 @@ What actually happens when the key skills run:
 
 ### Troubleshooting
 
-- **`ss-inspect`** — staged, evidence-driven root-cause analysis: pin down the
-  symptom, gather evidence from multiple sources (logs, traces, metrics, code,
-  git history), form competing hypotheses, and try to falsify them — reproducing
-  the failure where possible — before writing a root-cause report with a
-  recommended fix and the repositories requiring changes.
+- **`ss-inspect`** — report-only, evidence-driven root-cause analysis with
+  adaptive intensity: L0 Local uses a deterministic reproduction plus code-level
+  evidence; L1 Runtime selects the most discriminative single-service sources;
+  L2 Systemic retains the full cross-boundary investigation. Risk or scope
+  expansion promotes the tier without restarting. Tiering changes evidence cost,
+  never the design gate: every tier must first understand the complete relevant
+  responsibilities, implementation flow, invariants, existing mechanisms, and
+  affected paths, then design a repair at the owning abstraction while rejecting
+  symptom-only patches. It never changes code, configuration, or runtime state.
 
 ### Workflows
 
@@ -147,13 +152,17 @@ What actually happens when the key skills run:
   from an existing plan or a direct change instruction, skipping the proposal
   stages. Both support full and lite delivery modes and resume from artifacts if
   a session dies mid-flight.
-- **`ss-troubleshooting-workflow`** — runs `ss-inspect` first, holds at a
-  root-cause confirmation gate, and only then cuts a branch and drives the fix
-  through the same coding-and-review path.
+- **`ss-troubleshooting-workflow`** — runs tier-adaptive `ss-inspect` first,
+  requires a complete evidence/design/impact report with no unresolved promotion
+  signal, holds at a root-cause confirmation gate, and
+  only then cuts a branch and drives the fix through the same coding-and-review
+  path. A confirmed multi-repo repair scope hands off before branching, and
+  resume only reuses artifacts linked to the same Problem ID.
 - **`ss-multi-repo-workflow`** — for changes spanning repositories: splits the
-  work per repo, launches a headless agent process in each (running
-  `ss-coding-workflow`), schedules them in dependency batches, and aggregates the
-  per-repo results into one report. The orchestrator never edits code itself.
+  work per repo, launches one capability-checked runner from each repository's
+  real working root, schedules them in dependency batches, and validates an
+  evidence-bearing structured result for every repository. A runner may be a
+  native child or a headless process; the orchestrator never edits code itself.
 
 ### Git delivery
 

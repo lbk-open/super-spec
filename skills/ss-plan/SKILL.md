@@ -198,12 +198,17 @@ When the sub-plans belong to **different git repositories** (not just different 
 > **Agent execution guide:** use the `ss-multi-repo-workflow` skill to execute this master plan.
 
 **Repos:**
-| Repo | Local Path | Sub-plan | Batch | Depends On |
-|---|---|---|---|---|
-| payment-service | ../payment-service | 2026-07-03-refund-payment.md | 1 | — |
-| order-service | ../order-service | 2026-07-03-refund-order.md | 2 | payment-service (consumes its API) |
+| Repo | Local Path | Base SHA | Sub-plan | Batch | Depends On |
+|---|---|---|---|---|---|
+| payment-service | ../payment-service | `<planning-time HEAD>` | 2026-07-03-refund-payment.md | 1 | — |
+| order-service | ../order-service | `<planning-time HEAD>` | 2026-07-03-refund-order.md | 2 | payment-service (consumes its API) |
 
 **Unified branch name:** feat/<slug>
+**Problem ID:** <required for troubleshooting input; otherwise omit>
+**Investigation Report:** <exact path for troubleshooting input; otherwise omit>
+**Violated Invariant:** <required for troubleshooting input; otherwise omit>
+**Owning Boundary:** <required for troubleshooting input; otherwise omit>
+**Patch-Style Alternative Rejected:** <required for troubleshooting input; otherwise omit>
 **Contract changes:** <path to the shared API-contract repo, if the contract change was prepared separately / none>
 **User-Confirmed Scope Adjustments:** none
 ```
@@ -214,6 +219,13 @@ When the sub-plans belong to **different git repositories** (not just different 
 ### If already split upstream
 
 If the input comes from the `ss-proposal` skill and was already scoped to one subsystem, skip this check and proceed directly to Phase 1.
+
+### Baseline Freshness
+
+Before finalizing any execution plan, record `git rev-parse HEAD` for the repository whose code was
+read as canonical `**BASE_SHA:**` metadata. Each multi-repo sub-plan records its own repository's
+base; the master plan repeats those refs in its `**Repos:**` table. Validate refs as 7–64 lowercase
+hex characters. `BASE_SHA` is a freshness snapshot, not test evidence or the delivered ref.
 
 ## Phase 1: Comprehend
 
@@ -229,7 +241,38 @@ If the input comes from the `ss-proposal` skill and was already scoped to one su
 
 **If any item above can't be extracted from the input, ask the user — do not assume and proceed.**
 
+When the input is an `ss-inspect` investigation report, also require all of the following before
+planning: a stable `**Problem ID:**`; `Confidence: HIGH` with no material evidence gaps; a verified
+root cause and evidence chain; complete impact-scoped design/implementation understanding; the
+canonical `**Violated Invariant:**`, `**Owning Boundary:**`, and
+`**Patch-Style Alternative Rejected:**` fields; canonical one-entry-per-bullet
+`**Affected Paths:**` and `**Repositories Requiring Fix:**` lists;
+and repair, rollback, observability, compatibility/migration, and regression-verification guidance.
+An incomplete report returns to investigation rather than being filled in by the planner. A
+confirmed multi-repository list is binding: produce the matching master/sub-plan set and never
+silently drop a repository.
+
 ## Phase 2: Architect
+
+### Troubleshooting Repair Design
+
+For a plan sourced from an investigation report:
+
+- **Gate before architecture or task writing:** restate and validate the report's relevant component
+  responsibilities/ownership, end-to-end flow, dependencies, contracts/invariants, existing
+  mechanisms, healthy analogous paths, included/excluded scope, and affected paths. If the planner
+  cannot explain how they connect, return to `ss-inspect`; do not invent a local repair.
+- Restore the violated invariant at the correct abstraction or ownership boundary; do not turn a
+  symptom-only conditional at the failure line into the permanent design unless the evidence proves
+  that boundary owns the behavior.
+- Reuse an existing mechanism or extension point where the report identifies one.
+- Map every `**Affected Paths:**` bullet from the report to at least one implementation task and
+  one verification task or acceptance command.
+- Include compatibility and downstream effects, migration work, rollback, observability, focused
+  regression tests, full-suite verification, and runtime recovery signals in the architecture and
+  task graph.
+- Link the plan header to the exact Problem ID and investigation report path so downstream resume
+  checks cannot confuse it with another incident.
 
 ### File Structure
 
@@ -382,7 +425,18 @@ Tasks with no interdependency are marked with a parallel group label.
 ### 9. Spec compliance
 If repo specs were discovered: verify naming conventions, error-handling patterns, test structure, and commit-message format all conform.
 
-### 10. PlantUML validation
+For troubleshooting plans, also verify that every `**Affected Paths:**` and
+`**Repositories Requiring Fix:**` bullet in the confirmed investigation report remains covered; the
+design restores the named invariant at the correct
+boundary; and compatibility, migration, rollback, observability, regression, and runtime recovery
+work is present. Any omission is a plan defect, not an allowed scope reduction.
+
+### 10. Baseline freshness metadata
+Verify every execution plan/sub-plan has a valid canonical `**BASE_SHA:**` equal to the repository
+snapshot used for code and interface assumptions; verify each multi-repo master row repeats the
+matching sub-plan ref. Refresh stale assumptions before saving.
+
+### 11. PlantUML validation
 For each `plantuml` fenced block:
 - Render it via a PlantUML server — the public instance at `https://www.plantuml.com/plantuml`, or a local/self-hosted renderer if the project configures one — by encoding the source and requesting `/png/{encoded}` (or `/svg/{encoded}`).
 - Verify the returned image contains no "Syntax Error" text.
@@ -411,7 +465,9 @@ Focus areas:
 - Any placeholder violations (TBD/TODO/"refer to"/"similar to")?
 - Is the dependency graph a valid DAG?
 - Are PlantUML diagrams syntactically correct?
-- Is every task self-contained for a zero-context executor?
+- Can a fresh-context implementer locate the exact task by plan path + heading and execute it using the task-referenced specs, every repository-spec/guardrail path supplied by dispatch, concise dispatch context, and permitted repository exploration?
+- Is `**BASE_SHA:**` valid and does the plan still match relevant files/symbols/interfaces at that snapshot? For multi-repo plans, do master rows match sub-plans?
+- For troubleshooting input, is `Troubleshooting Repair Basis` complete, are canonical invariant/boundary/patch-rejection fields preserved, and does every affected path map to implementation plus verification?
 - When delta specs exist: does every Scenario map to at least one task's `Covers Scenario`, and does each task's acceptance verify that Scenario's WHEN/THEN rather than restating it as separate prose?
 
 Output: a list of issues, each with severity (MUST-FIX / SHOULD-FIX / NIT) and location (Task N, Step M).
@@ -454,12 +510,28 @@ If no issues: confirm "LGTM — plan is ready for execution."
 **Architecture:** [2-3 sentences: pattern used, layering approach, core data flow]
 **Tech Stack:** [key technologies/frameworks/middleware involved]
 **Scope:** [modules/services touched]
+**Repo:** [required for a multi-repo sub-plan; repository name matching the master table; otherwise omit]
 **Source:** [link or description of the input document]
+**Problem ID:** [required for plans sourced from an investigation report; otherwise omit]
+**Investigation Report:** [exact path when applicable; otherwise omit]
+**BASE_SHA:** [7–64 lowercase hex planning-time HEAD for this repository]
 **Date:** YYYY-MM-DD
 **OpenSpec Change:** openspec/changes/<change-id>/ (if applicable)
 **User-Confirmed Scope Adjustments:** [record each instruction, verbatim, only when the user explicitly asked to reduce/phase/accept a blocker; otherwise "none"]
 
 ---
+
+## Troubleshooting Repair Basis
+<!-- Required only for plans sourced from an investigation report; otherwise omit this section. -->
+
+**Relevant design and implementation:** [responsibilities/ownership, end-to-end flow, dependencies, contracts/invariants, existing mechanisms, healthy analogous paths, included/excluded scope]
+**Violated Invariant:** [exact invariant and evidence]
+**Owning Boundary:** [where the behavior belongs and why]
+**Patch-Style Alternative Rejected:** [tempting symptom/local-special-case patch and why it fails to restore the invariant]
+
+| Affected path from report | Implementation task | Verification task/command |
+|---|---|---|
+| `<repo>:<path>` | Task N | Task M / `<command>` |
 
 ## File Map
 [Phase 2 file structure map]
@@ -495,7 +567,7 @@ Multi-repo plan set saved:
 - Sub-plans: <list>
 
 Recommended next step: run the ss-multi-repo-workflow skill on docs/plans/<date>-<slug>-master.md
-(one sub-process per repository, batched by dependency order)
+(one capability-checked repository runner per real repo cwd, batched by dependency order)
 ```
 
 ## Anti-Patterns

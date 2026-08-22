@@ -45,6 +45,18 @@ the work directly (or point to the one relevant `ss-*` skill).
   workflow has no gate by default, so skip-gates has little effect here.
 - **Worktree preference** — forwarded to `ss-create-branch`.
 
+Derive one stable **input identity** before pre-flight and carry it verbatim into branch/commit/PR
+references and result evidence:
+
+- plan input → compact JSON with keys in this exact order and no extra whitespace:
+  `{"kind":"plan","path":"<canonical repo-relative POSIX path>","problem_id":<JSON string containing the exact persisted Problem ID, or null>}`;
+- direct instruction → compact JSON with keys in this exact order and no extra whitespace:
+  `{"kind":"instruction","sha256_12":"<first-12-lowercase-hex-of-SHA-256>"}`, hashing UTF-8 text after trimming, lowercasing, and collapsing each whitespace run to one space.
+
+Use normal JSON escaping inside strings and compare the parsed object plus canonical serialization
+verbatim. Never derive identity from a later summary, branch name alone, or whichever artifact is newest.
+Repository-runner invocation does not weaken these checks.
+
 ## Delivery Mode: full vs. lite
 
 The quality gates — TDD, multi-agent code review, verification — are identical in both modes.
@@ -106,9 +118,9 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 
 | Step | Completion check | On hit |
 |------|-------------------|--------|
-| `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this task's branch | Reuse the branch; switch into the worktree if applicable |
-| `ss-coding` | Every task in the input plan is checked off | Skip coding, go straight to the review-acceptance loop |
-| `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
+| `ss-create-branch` | The current branch/worktree is explicitly linked to the exact input plan or normalized direct-instruction identity (branch slug, commit/PR reference, or recorded workflow artifact) | Reuse/switch only when identity matches; otherwise create the correct branch |
+| `ss-coding` | Every task in the exact input plan is checked off; built-in review is `APPROVED` for the current diff; full verification evidence matches current HEAD; and the tree is clean | Skip coding; stale checkboxes or evidence from another plan/ref never count |
+| `ss-create-pr` | An open PR is linked to this identity-matched branch and exact plan/instruction, and current structured evidence satisfies every SUCCESS invariant including delivered/tested ref equality | Report the existing PR link and finish; an open PR alone is insufficient |
 
 ## Process
 
@@ -122,32 +134,51 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 3. **`ss-coding`** — full execution for a plan input; inline fast mode (handles small,
    low-file-count changes without a full plan) for a change instruction. It already covers TDD and
    test verification, and enforces its own post-coding review before returning a verdict.
-4. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
-   remaining findings are judged invalid.
+4. **Review-acceptance loop** — adjudicate findings and feed valid fixes or invalid-finding reasons
+   back into `ss-coding` until its fresh built-in review returns literal `APPROVED`, or escalate.
 5. **Delivery** *(full mode)* — call `ss-create-pr` to archive any delta spec, rebase, and open the
    PR; report the link, plus a reminder that `ss-cleanup` removes the worktree and branch after
    merge. *(lite mode)* — commit with a conventional-commits message (push optional), then print a
-   summary of files changed, tests run, and the review verdict.
-6. **Structured result block** — always end the final report with this block. `ss-multi-repo-workflow`
-   parses it when this workflow runs as a headless sub-process; in ordinary interactive use it is
-   just a few extra lines:
+   summary of files changed, tests run, and the review verdict. Resolve the final delivered commit
+   after all delivery/rebase work. If it differs from the last test-verified ref, rerun full
+   verification against that commit; if conflict resolution or delivery changed content, rerun
+   `ss-coding` so its built-in review approves the delivered diff.
+6. **Structured result block** — always end the final report with this block. A repository runner
+   under `ss-multi-repo-workflow` returns it to the parent; in ordinary interactive use it is just
+   a few extra lines. Values for object/array fields are compact valid JSON on one line:
 
-   ```
+   ```text
    ---SS-RESULT---
    status: SUCCESS | FAILED | BLOCKED
+   input_identity: {"kind":"plan","path":"docs/plans/example.md","problem_id":null}
    branch: <branch-name>
-   delivery: <pr-url | local-commit | none>
-   review_verdict: <APPROVED | ...>
-   test_verified_ref: <commit-ish | none>
+   delivery: <pr-url | local-commit:<7-64 lowercase hex SHA> | none>
+   delivered_ref: <7-64 lowercase hex SHA | none>
+   review_verdict: <APPROVED | NEEDS_CHANGES | CRITICAL_ISSUES | NOT_RUN>
+   test_verified_ref: <7-64 lowercase hex SHA | none>
+   test_evidence: {"command":"<full verification command or none>","result":"passed|failed|not-run","summary":"<concise result>"}
    tasks_completed: <N/N>
+   changed_files: ["path/one", "path/two"]
+   commands_run: [{"command":"<exact command>","result":"passed|failed|not-run","summary":"<concise result>"}]
+   residual_risks: ["<remaining non-blocking risk>"]
+   clean_worktree: <true | false>
    blocker: <one-line reason when status is not SUCCESS, else omit>
    ---END-SS-RESULT---
    ```
 
-   Emit exactly one block, as the last thing in the final message. `status: SUCCESS` requires
-   either an open PR or an explicit "delivered as local commit" decision, plus all tasks
-   completed. Every escalation/abort path emits the block too, with `FAILED`/`BLOCKED` and
-   `blocker` filled in.
+   Emit exactly one block, as the last thing in the final message, with every field except the
+   conditional `blocker` present. Use `[]`, `none`, and `not-run` rather than omitting evidence on
+   failure paths.
+
+   `status: SUCCESS` is valid only when all of these hold: `input_identity` exactly matches this
+   invocation; delivery is an open PR or explicit local commit; `delivered_ref` is the final commit
+   delivered at that location; `review_verdict` is
+   `APPROVED`; `test_verified_ref == delivered_ref`; `test_evidence.result` is `passed`; its exact
+   full verification command appears as a passed
+   entry in `commands_run`; every task is complete; `changed_files` is non-empty; all residual
+   risks are disclosed; `clean_worktree` is `true`; and `blocker` is absent. Any contradiction or
+   missing evidence changes the status to `FAILED` or `BLOCKED`. Every escalation/abort path emits
+   the block with `blocker` filled in.
 
 ## Review-Acceptance Loop
 
@@ -162,9 +193,10 @@ After `ss-coding` returns its verdict, this workflow sets no gate and does not p
      stubbed logic presented as complete, or scope silently deferred ("phase 2", "MVP",
      "simplified for now") must never be judged invalid as "by design" or "out of scope" unless
      the user explicitly approved that scope adjustment earlier — cite that approval.
-4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-coding` again for just those findings → back to
-   step 1.
+4. All judged invalid → pass the complete adjudication record back to `ss-coding` and require a
+   fresh built-in review of the current diff. Only a literal `APPROVED` result proceeds to delivery;
+   if approval cannot be obtained, emit `FAILED`/`BLOCKED` rather than rewriting the prior verdict.
+5. Valid findings remain → call `ss-coding` again for just those findings → back to step 1.
 
 **Convergence protection:**
 - Cap workflow-level rounds at 3, independent of `ss-coding`'s internal rounds; if

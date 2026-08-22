@@ -1,6 +1,6 @@
 ---
 name: ss-troubleshooting-workflow
-description: End-to-end defect fix — takes an issue link, alert ID, or problem description and orchestrates root-cause investigation, human confirmation, branching, a fix plan, multi-agent coding with built-in review, and PR/commit delivery. Use only when the user explicitly asks for the full diagnose-to-delivery pipeline, not for diagnosis alone.
+description: End-to-end defect fix — takes an issue link, alert ID, or problem description and orchestrates tier-adaptive root-cause investigation, human confirmation, branching, a fix plan, multi-agent coding with built-in review, and PR/commit delivery. Use only when the user explicitly asks for the full diagnose-to-delivery pipeline, not for diagnosis alone.
 ---
 
 # Troubleshooting Workflow
@@ -36,6 +36,7 @@ or a diagnosis-only request, do the work directly (or point to `ss-inspect` for 
 - **Problem source** — an issue link, alert ID, or plain-text problem description. If missing,
   ask for one.
 - **Delivery mode** — `full` (default) or `lite`. See "Delivery Mode" below.
+- **Investigation tier** — `auto` (default), `L0 Local`, `L1 Runtime`, or `L2 Systemic`, forwarded to `ss-inspect`. An explicit higher tier is honored; an explicit lower tier is only a hint and must be promoted when its evidence conditions or risk boundary fail.
 - **Skip-gates** — proceed through the root-cause confirmation gate without pausing (not
   recommended — see Iron Rule 2).
 - **Decide-autonomously** — resolve ambiguous choices without asking.
@@ -64,8 +65,7 @@ on conflict).
 
 | Level | Signal | Action |
 |---|---|---|
-| Deterministic | `ss-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row) | Hand off to `ss-multi-repo-workflow` — no question when deciding autonomously |
-| High confidence | The root-cause report's `**Repositories Requiring Fix:**` list has more than one entry | Offer hand-off at the root-cause gate; autonomous mode hands off |
+| Deterministic | `ss-plan` produced a **master plan** (`*-master.md` with a `**Repos:**` table of more than one row), or a complete, confirmed root-cause report whose `**Repositories Requiring Fix:**` list has more than one entry | Hand off to `ss-multi-repo-workflow`; a confirmed report's repository scope cannot be downgraded later |
 | Heuristic | The issue/alert description explicitly requires committing fixes in two or more services/repos | Ask, showing the evidence; autonomous mode hands off |
 | Exclusions | Shared API-contract repo, spec/standards submodules, services merely mentioned as callers/context with no code change, multiple modules inside one repository | Not multi-repo signals |
 
@@ -74,12 +74,13 @@ on conflict).
 1. **Entrance, before pre-flight** — scan the issue/alert text for the heuristic signal. On a
    hit, ask (or decide autonomously) and hand off with the original input.
 2. **Root-cause gate** — the most reliable point: by the end of the investigation, affected repos
-   are part of the evidence chain. When the report's repo list has more than one entry, the gate
-   gains an extra option: switch to `ss-multi-repo-workflow` (the recommended default in that
-   case). Hand off with the root-cause report as the planning input.
-3. **After build-plan** — a safety net for a mis-scoped root-cause report: if `ss-plan`'s
-   scope check still detected a cross-repo span and produced a master plan, hand off with it —
-   deterministic, no question asked under autonomous mode.
+   are part of the evidence chain. Once the user confirms a complete report whose repository list
+   has more than one entry, hand off with that report as the planning input. Single-repo
+   continuation is forbidden after confirmation.
+3. **After build-plan** — a safety net for initially single-repo reports: if `ss-plan`'s scope
+   check detects a cross-repo span and produces a master plan, hand off with it. If a previously
+   confirmed multi-repo report reaches planning and the plan omits one of its repositories, stop
+   and correct the plan instead of downgrading scope.
 
 On hand-off: pass the original input, the root-cause report and any other artifacts, and the
 active automation flags to `ss-multi-repo-workflow`; print one line explaining the hand-off and
@@ -94,23 +95,35 @@ Violating any of these means stopping and explaining to the user:
 2. **The root-cause-confirmation gate is on by default and critical** — a wrong root cause causes
    full rework, so a human must confirm it (skip-gates mode can bypass this, but it isn't
    recommended).
-3. **Pre-flight checks ask, they don't abort** — apply the autonomous default only when deciding
+3. **Design understanding precedes repair design at every tier** — before `ss-inspect` may write a
+   permanent repair proposal, it must explain the complete relevant design and implementation for
+   the evidence-derived scope: responsibilities/ownership, end-to-end flow, dependencies,
+   invariants, existing mechanisms, healthy analogs, and all affected paths. Tiering may shorten
+   the account but never skip this gate or authorize a patch-style fix.
+4. **Pre-flight checks ask, they don't abort** — apply the autonomous default only when deciding
    autonomously.
-4. **No gate for review — run the loop instead** — see "Review-Acceptance Loop". There is also no
+5. **No gate for review — run the loop instead** — see "Review-Acceptance Loop". There is also no
    gate before delivery.
-5. **Resumable** — on start, probe for existing artifacts and skip completed steps.
-6. **Never relax safety guardrails** — automation flags only affect questions and approvals; they
+6. **Resumable by identity, never recency alone** — reuse only artifacts explicitly linked to the
+   current `**Problem ID:**` and their exact upstream artifact.
+7. **Investigation completeness is non-skippable** — skip-gates may bypass the human pause, but it
+   never permits anything below `Confidence: HIGH`, an unjustified investigation tier/evidence
+   budget, unresolved promotion signals, material evidence gaps, an incomplete design-understanding
+   gate, missing canonical `**Affected Paths:**`/`**Repositories Requiring Fix:**` bullet lists, or
+   an incomplete repair and verification plan (including canonical `**Violated Invariant:**`,
+   `**Owning Boundary:**`, and `**Patch-Style Alternative Rejected:**`) to proceed.
+8. **Never relax safety guardrails** — automation flags only affect questions and approvals; they
    never bypass the hard rules built into the underlying skills.
 
 ## Pre-flight Checks
 
-Run once on start. Any unmet check defaults to asking the user, not terminating.
+Run the source/delivery checks once on start. Evaluate branch/worktree readiness only after a complete report is confirmed, immediately before Step 4. Any unmet check defaults to asking the user, not terminating.
 
 | Check | Trigger condition | Ask the user (default) | Autonomous default |
 |-------|--------------------|-------------------------|---------------------|
 | Problem source reachable | Input is a URL and no tool is configured to fetch it | [describe how to fetch it]/[switch to a text description]/[abort] | Cannot read the source → abort and report |
 | PR-hosting CLI available | Neither `gh` nor `glab` is installed/authenticated | [install/authenticate then continue]/[continue but skip `ss-create-pr`]/[abort] | Continue; skip `ss-create-pr`, prompt to deliver manually |
-| Branch state | Still on the trunk/default branch when entering coding | [create a branch first]/[code on the current branch]/[abort] | Auto-invoke `ss-create-branch`, then continue |
+| Branch/worktree identity (after confirmation) | A candidate branch/worktree exists but is not linked to the confirmed Problem ID, or full mode is still on the default branch | [reuse only with identity evidence]/[create the correct branch]/[abort] | Invoke `ss-create-branch` for the confirmed Problem ID; never mix with unrelated work |
 
 > Whether the investigation needs environment/observability access is decided by `ss-inspect`
 > itself — pure code analysis needs none of that.
@@ -119,32 +132,48 @@ Run once on start. Any unmet check defaults to asking the user, not terminating.
 
 | Step | Completion check | On hit |
 |------|-------------------|--------|
-| `ss-inspect` | A root-cause conclusion was already produced this session, or `docs/troubleshooting/` has a recent (within 24h) report | List it and ask whether to reuse (autonomous mode reuses the most recent) |
-| `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this issue's branch | Reuse the branch; switch into the worktree if applicable |
-| `ss-plan` | `docs/plans/` has a structured plan | Reuse, skip |
-| `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
-| `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
+| `ss-inspect` | A report's `**Problem ID:**` matches the current issue URL, alert ID, or stable fingerprint; its investigation tier, rationale, evidence budget, and promotions are recorded; confidence is HIGH with no material evidence gaps; the design-understanding gate is complete; canonical `**Violated Invariant:**`, `**Owning Boundary:**`, and `**Patch-Style Alternative Rejected:**` fields are present; and systemic-impact, repository, repair, and verification sections are complete | List matching complete reports and ask whether to reuse (autonomous mode reuses the newest matching one); never reuse a merely recent, under-scoped, or MEDIUM-confidence report |
+| `ss-create-branch` | The current branch/worktree is explicitly linked to the same Problem ID (branch slug, issue-linked artifact, or recorded workflow metadata) | Reuse/switch only when identity matches; otherwise create the correct branch |
+| `ss-plan` | A structured plan explicitly references the same Problem ID and exact investigation report; contains a complete `Troubleshooting Repair Basis` with matching canonical invariant/boundary/patch-rejection fields and revalidated responsibilities, flow, dependencies, existing mechanisms, and healthy analogs; and maps every `**Affected Paths:**`/`**Repositories Requiring Fix:**` entry to implementation and verification | Reuse, skip; otherwise rebuild it from the report — identity and path coverage alone are insufficient |
+| `ss-coding` | Every task in that identity-matched, freshness-valid plan is checked; built-in review is `APPROVED`; full verification matches current HEAD; tree is clean | Skip coding; stale checkboxes or evidence from another plan/ref never count |
+| `ss-create-pr` | An open PR is linked to the same Problem ID, branch, and plan, and complete SUCCESS evidence proves current APPROVED review, full verification, clean tree, and `test_verified_ref == delivered_ref` | Report the existing PR link and finish; identity or an open PR alone is insufficient |
 
 ## Process
 
 1. **Pre-flight and resume.**
-2. **`ss-inspect`** — locate the root cause through a multi-source evidence chain, cross-verifying
-   with at least two independent sources. Record the conclusion and its evidence.
-3. **Gate: root-cause confirmation** — show the conclusion and evidence; pause for **continue to
-   fix / re-investigate / abort**, plus **switch to multi-repo workflow** when the repo list has
-   more than one entry (recommended default in that case). This step requires human confirmation
-   — a wrong root cause reworks everything downstream. Skip-gates mode bypasses it (not
-   recommended). "Re-investigate" gathers more evidence or changes direction, then confirms again.
-   Cap re-investigation at 2 rounds; beyond that, explain the evidence gap and offer "abort with a
-   note" or "continue to fix anyway" rather than retrying indefinitely.
-4. **`ss-create-branch`** *(full mode only)* — branch from the issue input, prefix defaulting to
-   `fix/`. Forward the worktree preference. Record the branch name and worktree path.
-5. **`ss-plan`** — draft the fix plan from the root-cause conclusion (including any spec
-   delta). If it produced a master plan, hand off to `ss-multi-repo-workflow` and stop.
+2. **`ss-inspect`** — produce a report-only investigation: derive a stable `**Problem ID:**`,
+   classify the evidence/risk boundary as L0 Local, L1 Runtime, or L2 Systemic, and gather only the
+   tier-required discriminative evidence while promoting immediately when scope or risk expands.
+   Verify the root cause with at least two independent sources, scope understanding by potential
+   blast radius, reconstruct the relevant design/invariants, populate the canonical
+   `**Affected Paths:**` and `**Repositories Requiring Fix:**` bullet lists, and design the permanent
+   repair plus verification. It must not edit code/configuration, mutate runtime state, apply
+   mitigation, create a branch, or invoke coding.
+3. **Design-understanding completeness check, then root-cause confirmation gate** — first require
+   a justified tier and evidence budget with no unresolved promotion signal, `Confidence: HIGH`,
+   no material evidence gaps, and a passed design-understanding gate covering responsibilities,
+   ownership, end-to-end flow, dependencies, invariants, existing mechanisms, healthy analogs,
+   affected paths, and explicit rejection of patch-style repair. Missing evidence or
+   impact-scoped understanding always returns to investigation,
+   even under skip-gates. Then show the complete conclusion and evidence; pause for **continue to
+   fix / re-investigate / abort**. Skip-gates may bypass this human pause only after completeness
+   passes. Cap re-investigation at 2 rounds; if the report is still incomplete, stop with the
+   evidence gaps and do not offer "continue anyway." Once a complete report is confirmed, its
+   repository list is authoritative: more than one entry hands off immediately to
+   `ss-multi-repo-workflow` before any branch is created.
+4. **`ss-create-branch`** *(full mode only)* — branch from the Problem ID, prefix defaulting to
+   `fix/`. Forward the worktree preference. Record the identity linkage, branch name, and worktree
+   path.
+5. **`ss-plan`** — draft the fix plan from the exact investigation report (including any spec
+   delta). The plan must restore the violated invariant at the correct ownership boundary, cover
+   every `**Affected Paths:**` bullet, and include compatibility/migration, rollback,
+   observability, and regression verification. If it produces a master plan, hand off to
+   `ss-multi-repo-workflow` and stop. If it drops a repository from a confirmed report, correct the
+   plan before continuing.
 6. **`ss-coding`** — execute the fix plan. It already covers TDD and test
    verification, and enforces its own post-coding review before returning a verdict.
-7. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
-   remaining findings are judged invalid.
+7. **Review-acceptance loop** — adjudicate findings and feed valid fixes or invalid-finding reasons
+   back into `ss-coding` until its fresh built-in review returns literal `APPROVED`, or escalate.
 8. **Delivery** *(full mode)* — call `ss-create-pr`, referencing the original issue in the PR
    description; report the link, plus a reminder that `ss-cleanup` removes the worktree and
    branch after merge. *(lite mode)* — commit with a conventional-commits message referencing the
@@ -163,9 +192,10 @@ After `ss-coding` returns its verdict, this workflow sets no gate and does not p
      stubbed logic presented as complete, or scope silently deferred ("phase 2", "MVP",
      "simplified for now") must never be judged invalid as "by design" or "out of scope" unless
      the user explicitly approved that scope adjustment earlier — cite that approval.
-4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-coding` again for just those findings → back to
-   step 1.
+4. All judged invalid → pass the complete adjudication record back to `ss-coding` and require a
+   fresh built-in review of the current diff. Only literal `APPROVED` proceeds to delivery; if it
+   cannot be obtained, escalate instead of rewriting the verdict.
+5. Valid findings remain → call `ss-coding` again for just those findings → back to step 1.
 
 **Convergence protection:**
 - Cap workflow-level rounds at 3, independent of `ss-coding`'s internal rounds; if
@@ -179,7 +209,7 @@ After `ss-coding` returns its verdict, this workflow sets no gate and does not p
 | Situation | Handling |
 |-----------|----------|
 | Input empty | Ask for an issue link, alert ID, or problem description |
-| `ss-inspect` cannot pin down a root cause (insufficient evidence) | Stop at the confirmation gate, explain the gap, don't force a fix |
+| `ss-inspect` cannot pin down a root cause or complete the impact-scoped understanding | Stop before confirmation, explain the evidence gap, and do not force a fix |
 | Diagnosis concludes "not a defect / expected behavior" | Report the conclusion, don't create a branch or fix, finish |
 | Coding is blocked | Stop, escalate, preserve the scene |
 | Review-acceptance loop exceeds max rounds | Escalate |

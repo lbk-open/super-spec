@@ -8,7 +8,7 @@ A workflow skill exists to remove that burden. It is not a new capability — ev
 
 **Thin orchestration.** A workflow skill contains no implementation logic of its own. It is a declarative sequence: call skill A, take its output, hand it to skill B, pause at the defined gates, report progress. All the actual work — writing a proposal, building a plan, writing code, reviewing a diff, opening a PR — lives in the skill being called. If you ever find yourself tempted to have a workflow skill reimplement part of what `ss-create-branch` or `ss-plan` already does, that's a sign the boundary has been crossed. Duplicated logic drifts out of sync; a single skill that owns a responsibility doesn't.
 
-**Artifacts as state.** A branch, a proposal file, a plan with checkboxes, an open PR — each is already a durable record of "this step happened." Workflows don't need a separate state file to track progress; they read the repository. This is also what makes resuming after an interrupted session possible (see below).
+**Artifacts as state.** A branch, proposal, plan with checkboxes, review/test evidence, and PR are durable checkpoint candidates. Workflows don't need a separate state file, but they never trust recency, a checkbox, or an open PR alone: identity, `BASE_SHA`, current refs, and completion evidence must agree before a step is skipped. This is what makes interrupted sessions resumable without mixing unrelated or stale work.
 
 **Human gates at points that matter.** Full automation sounds appealing until an AI-authored root cause turns out to be wrong and the entire fix built on it has to be redone. Gates are placed exactly where a wrong decision would be expensive to unwind: confirming a proposal before planning against it, confirming a root cause before branching to fix it. Everywhere else — including the code-review cycle — the workflow keeps moving on its own, because those steps are cheap to redo automatically if something comes back wrong.
 
@@ -54,7 +54,7 @@ Scope: the proposal stage is reserved for requirements substantial enough to war
 
 ```mermaid
 flowchart LR
-    A[ss-inspect] --> G{Gate: root-cause review}
+    A[ss-inspect<br/>L0 / L1 / L2] --> G{Gate: root-cause review}
     G -->|confirmed| B[ss-create-branch]
     B --> C[ss-plan]
     C --> D[ss-coding<br/>+ built-in review]
@@ -63,13 +63,13 @@ flowchart LR
     E -->|yes| F[ss-create-pr]
 ```
 
-1. Run the investigation skill to gather evidence from independent sources and converge on a root cause.
-2. **Gate: root-cause review.** Show the conclusion and its supporting evidence; wait for confirmation, a request to re-investigate, or a decision to abort. This gate is non-negotiable — an incorrect root cause means every subsequent step, including the fix itself, has to be thrown away and redone.
-3. Only after confirmation does branch creation happen — there's no point branching before you know the fix is worth making. Default branch prefix is `fix/`.
-4. Build the fix plan from the confirmed root cause.
+1. Run the report-only investigation skill. It derives **L0 Local** (deterministic pure-code reproduction), **L1 Runtime** (single-service environment evidence), or **L2 Systemic** (cross-boundary or hard-risk work), then applies any explicit higher tier as a floor. L0/L1 start with the 2–3 most discriminative sources and stop broadening collection when 2+ independent sources agree, the strongest alternative is contradicted, blast radius is justified, and a concrete Phase 5 verification path exists; Phase 5 must still verify causality before confidence becomes HIGH. L2 checks every applicable source. Unstable reproduction, expanding scope, hard risk, or conflicting evidence that leaves the blast radius uncertain promotes the run without discarding existing evidence. Tiering changes evidence cost, not the design gate: before any repair proposal, every tier must completely explain the relevant responsibilities/ownership, end-to-end implementation flow, dependencies, invariants, existing mechanisms, healthy analogs, and affected paths for its proven scope. Only then may it design a repair, explicitly rejecting a tempting symptom-only patch, without changing code, configuration, or runtime state.
+2. **Design-understanding completeness check, then gate: root-cause review.** A justified tier/evidence budget with no unresolved promotion signal, HIGH confidence, no material evidence gaps, complete relevant-design/implementation understanding, systemic impact, canonical affected-path/repository lists, patch-style rejection, and repair/verification sections are mandatory and cannot be skipped. Once complete, show the conclusion and supporting evidence; wait for confirmation, re-investigation, or abort. An automation option may bypass the human pause, but never bypass report completeness.
+3. Only after confirmation does branch creation happen — there's no point branching before you know the fix is worth making. Default branch prefix is `fix/`. A confirmed report naming multiple repair repositories hands off to `ss-multi-repo-workflow` before this step and cannot later be downgraded to one repository.
+4. Build the fix plan from the exact identity-linked report. Before tasks, the plan records a reusable `Troubleshooting Repair Basis`: relevant design/implementation, violated invariant, owning boundary, rejected patch-style alternative, and an affected-path-to-task/verification matrix. It then restores the invariant at that boundary and covers compatibility, migration, rollback, observability, regression tests, and runtime verification.
 5. Run coding and review to convergence, then open the PR referencing the original issue.
 
-The branch-creation ordering is the one structural difference from feature work: investigate first, then branch, rather than branch first.
+The branch-creation ordering is the structural difference from feature work: complete and confirm the report first, then branch, rather than branch first.
 
 ### ss-coding-workflow
 
@@ -95,9 +95,9 @@ All three workflows call a single combined step for implementation: `ss-coding` 
 
 What the workflow *does* own is what happens with the verdict that step hands back:
 
-- **Clean verdict** — proceed straight to PR creation. No gate.
-- **Outstanding findings** — triage each one. A finding might be a false positive, out of scope for this change, or a deliberate design choice; record the reasoning and move on. A finding that's genuinely valid gets queued for a fix.
-- **Valid findings exist** — call the coding step again, scoped to just those findings. It re-implements and re-reviews internally. Repeat from the top.
+- **Literal `APPROVED` verdict** — proceed straight to PR creation. No gate.
+- **Outstanding findings** — triage each one. Valid findings become fixes; invalid findings receive explicit reasons. Return either set to `ss-coding` and require a fresh built-in review of the current diff — the workflow never rewrites a non-approved verdict itself.
+- **Fresh review still not approved** — repeat with the scoped fixes/adjudication, or escalate at the convergence limit.
 
 This is deliberately not gated — a review finding is cheap to act on automatically, unlike a wrong proposal or root cause. It does need a backstop, though: an unbounded retry loop can burn tokens indefinitely, and a genuinely stuck disagreement needs a human eventually. The workflow tracks its own retry ceiling (independent of any retry counting the coding step does internally, since that resets on every call and isn't visible one layer up) and its own recurrence count — the same finding surviving two consecutive workflow-level fix attempts is treated as a stuck loop, not a third try. Either limit being hit escalates to the user with the latest verdict and a clear list of what's fixed versus what remains. Every finding dismissed as invalid must carry a one-line reason in the log, so a human reviewer can spot-check that "invalid" wasn't just a shortcut to get the loop to end.
 
@@ -121,15 +121,15 @@ Sessions get interrupted. Rather than tracking progress in a side file, a workfl
 
 | Step | Signal that it's already complete | Behavior on match |
 |---|---|---|
-| Branch creation | Current branch isn't the default branch | Reuse it |
-| Root-cause investigation | A recent root-cause report already exists | Ask whether to reuse it |
-| Proposal writing | A recent, matching file exists under the proposals directory | Reuse it |
-| Plan building | A structured plan (tasks, file lists) already exists | Reuse it |
-| Coding | Every task checkbox in the plan is already checked | Skip straight to the review loop |
-| PR creation (full mode) | An open PR already exists for this branch | Report its link instead of opening a new one |
-| Commit (lite mode) | The latest commit already references this plan or instruction | Report it instead of committing again |
+| Branch creation | The current branch/worktree is explicitly linked to the same requirement or Problem ID | Reuse it |
+| Root-cause investigation | A complete report has the same `**Problem ID:**` as the current issue/alert/fingerprint | Ask whether to reuse it; recency alone is insufficient |
+| Proposal writing | A file explicitly matches the current requirement identity | Reuse it |
+| Plan building | A structured plan links to the current requirement identity and exact proposal/investigation report and records its repository `BASE_SHA` | Reuse it after freshness validation |
+| Coding | Every task in that identity-matched, freshness-validated plan is checked and APPROVED review/full-verification evidence matches current HEAD | Skip coding; stale checkboxes alone are insufficient |
+| PR creation (full mode) | An open PR links to the identity-matched branch/plan and complete SUCCESS evidence proves current APPROVED review, full verification, clean tree, and `test_verified_ref == delivered_ref` | Report its link; an open PR alone is insufficient |
+| Commit (lite mode) | The identity-matched commit is the `delivered_ref` and complete SUCCESS evidence proves current APPROVED review, full verification, and clean tree | Report it instead of committing again |
 
-This probing is also what makes the human gates safe to interleave with real work: if a session is resumed after a proposal was already approved, the workflow sees the approved proposal on disk and doesn't re-open the gate — it moves straight to planning.
+This probing is also what makes the human gates safe to interleave with real work: if a session is resumed after a proposal was already approved, the workflow sees the approved proposal on disk and doesn't re-open the gate — it moves straight to planning. Plans carry `BASE_SHA`; before first dispatch, `ss-coding` checks relevant files, symbols, interfaces, dependencies, and dirty changes against that snapshot. Relevant external drift returns to planning instead of sending stale instructions to implementers.
 
 ## Cross-Host Portability
 

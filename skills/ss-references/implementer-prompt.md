@@ -6,16 +6,25 @@ Use this template when dispatching an implementer subagent. Fill in the brackete
 Spawn a subagent:
   description: "Implement Task N: [task name]"
   prompt: |
-    You are implementing Task N: [task name]
+    You are implementing Task N: [exact task heading]
 
-    ## Task Description
+    ## Authoritative Task Reference
 
-    [FULL TEXT of task from plan — paste here, do NOT make agent read plan file]
+    - Plan: [canonical repository-relative plan path]
+    - Task: [exact task number and heading]
+    - BASE_SHA: [planning-time base commit]
 
-    ## Context
+    Read the plan file and locate exactly that task heading. Read its full body, every spec/reference
+    named by that task, and every repository-spec/guardrail path listed in this dispatch before
+    coding; do not read unrelated task sections. If the heading is missing/ambiguous, `BASE_SHA` differs
+    from the dispatch, or the task's Files/Steps/Acceptance disagree with this prompt, STOP with
+    `PLAN_ISSUE`; do not infer or merge scope from nearby tasks.
 
-    [Scene-setting: where this task fits in the overall plan, what was built before,
-     what will be built after. Include architecture context from plan header.]
+    ## Dispatch Context
+
+    [Concise scene-setting: where this task fits, completed prerequisites and their outputs,
+     interfaces/dependencies it consumes or exposes, and architecture context needed to interpret
+     this task. Do not duplicate the full task body.]
 
     ## Repository Specs (if applicable)
 
@@ -29,8 +38,9 @@ Spawn a subagent:
     ## Scope Boundary
 
     You are ONLY allowed to modify these files:
-    [List from task's **Files:** section]
+    [List copied from the referenced task's **Files:** section]
 
+    Cross-check this list against the authoritative task before editing. A mismatch is `PLAN_ISSUE`.
     If you need to modify any other file, STOP and report NEEDS_CONTEXT.
     Do NOT touch files outside this list.
 
@@ -85,7 +95,7 @@ Spawn a subagent:
 
     **STOP and escalate when:**
     - The task requires architectural decisions not covered in the plan
-    - You need code context beyond what was provided
+    - You need context beyond the referenced task, listed specs, dispatch context, and permitted repository exploration
     - You feel uncertain about correctness
     - The task involves restructuring that the plan didn't anticipate
     - Same error appears 3 times despite different approaches
@@ -116,7 +126,7 @@ Spawn a subagent:
     | **Skipping exploration** | Jumping to code without reading existing patterns | Explore first for non-trivial tasks |
     | **Silent failure** | Looping on same broken approach | After 3 attempts, escalate |
     | **Debug leaks** | Leaving console.log, TODO, HACK, debugger in code | Grep modified files before reporting |
-    | **Assuming context** | Using knowledge not in the prompt | Only use provided context + exploration |
+    | **Assuming context** | Using unstated knowledge or unrelated plan sections | Use the referenced task/specs, dispatch context, and permitted repository exploration |
 
     ## Before Reporting: Self-Review
 
@@ -153,6 +163,7 @@ Spawn a subagent:
     ## Report Format
 
     When done, report:
+    - **Plan / Task / BASE_SHA:** [echo the authoritative references used]
     - **Status:** DONE | DONE_WITH_CONCERNS | BLOCKED | NEEDS_CONTEXT | PLAN_ISSUE | CONFLICT
     - **Changes Made:**
       - `file.ext:line-range` — what changed and why

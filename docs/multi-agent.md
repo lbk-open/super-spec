@@ -6,13 +6,13 @@ Two skills in SuperSpec — `ss-coding` and `ss-code-review` — get their names
 
 A single agent implementing an entire plan accumulates context across every task it touches — by task ten, it's carrying the weight of tasks one through nine, and that weight both slows it down and biases what it notices. A single agent reviewing its own work has an even sharper problem: it's checking the reasoning it just used to write the code, which is exactly the reasoning most likely to contain a blind spot it can't see.
 
-Splitting fixes both. An implementer agent gets exactly one task, described completely, with no history to carry — its output isn't shaped by what it did three tasks ago. A reviewer agent gets one dimension to check — general correctness, or spec compliance, or cross-task integration — and never sees what another reviewer found, which is what keeps one agent's read from anchoring another's.
+Splitting fixes both. An implementer agent gets exactly one authoritative task reference, with no history to carry — its output isn't shaped by what it did three tasks ago. A reviewer agent gets one dimension to check — general correctness, or spec compliance, or cross-task integration — and never sees what another reviewer found, which is what keeps one agent's read from anchoring another's.
 
 ## Orchestrator Discipline
 
 In both skills, the agent running the skill — the orchestrator — never writes code and never reviews code itself. Its job is narrower and more mechanical: read the plan or the diff, dispatch the right agents with the right context, collect what comes back, and decide what happens next. If the orchestrator starts editing a source file directly, or starts adding its own opinion to a review report, the whole point of the split is gone — the very bias that motivated dispatching a separate agent has crept back in through the coordinator instead.
 
-The corollary is the **zero-context assumption**: every dispatched agent starts cold, with no memory of the plan, the codebase, or any other agent's work. Everything it needs — the full task description, not a pointer to a file to go read; the relevant specs; the files it's allowed to touch — has to be handed to it explicitly in the dispatch prompt. Making a subagent read the plan file itself wastes its context budget and risks it misreading scope; pasting the task in full costs a little more prompt length but removes that risk entirely.
+The corollary is the **fresh-context assumption**: every dispatched agent starts with no chat history. The plan remains the authoritative artifact, so dispatch passes its canonical path plus the exact task number/heading, `BASE_SHA`, concise scene-setting and interface context, applicable spec paths, cwd, verification commands, and a scope boundary. The implementer reads only that task and its references, then cross-checks their file scope against the dispatch. This avoids duplicating large task bodies while making a missing, ambiguous, stale, or mismatched reference a hard `PLAN_ISSUE` instead of an invitation to guess.
 
 ```mermaid
 sequenceDiagram
@@ -21,8 +21,8 @@ sequenceDiagram
     participant I2 as Implementer (Task 2)
     participant R as ss-code-review
 
-    O->>I1: Dispatch (full task text, scope, specs)
-    O->>I2: Dispatch (full task text, scope, specs)
+    O->>I1: Dispatch (plan path + Task 1, BASE_SHA, scope, specs)
+    O->>I2: Dispatch (plan path + Task 2, BASE_SHA, scope, specs)
     I1-->>O: DONE
     I2-->>O: NEEDS_CONTEXT
     O->>I2: Re-dispatch with missing context
@@ -74,14 +74,14 @@ The same discipline applies to errors: the same failure recurring on the same ta
 
 ### The Plan File as Persistent State
 
-Checking off a task's checkbox in the plan file the moment it completes does double duty: it's the progress record for this run, and it's also what makes the workflow-level resumability described in [workflows.md](./workflows.md) work — a session that gets interrupted mid-plan can be picked back up by reading which boxes are already checked, without redoing finished work.
+Checking off a task's checkbox in the plan file the moment it completes does double duty: it's the progress record for this run, and it's also what makes the workflow-level resumability described in [workflows.md](./workflows.md) work. Before first dispatch, `ss-coding` compares the plan's `BASE_SHA` with relevant file/symbol/interface drift; stale plans return to planning rather than being followed blindly. On resume, checked boxes count only with matching review and verification evidence.
 
 ## Role Prompt Templates
 
 Every implementer dispatch and every reviewer dispatch follows the same prompt shape, kept as a shared template in `skills/ss-references/` rather than rewritten inline each time a skill needs one. `implementer-prompt.md` is the coding side of this; `ss-code-review` carries the equivalent structure for each reviewer role it dispatches. The shared shape exists because the zero-context assumption above imposes the same requirements on every dispatch, no matter which skill is doing the dispatching:
 
-- **The full task or diff, pasted in** — never a path for the subagent to go read itself.
-- **Scene-setting context** — where this piece fits in the larger plan or change, so the agent isn't just executing in a vacuum.
+- **An authoritative input reference** — implementers receive plan path + exact task heading + `BASE_SHA`; reviewers receive the diff slice they must inspect.
+- **Concise scene-setting context** — where this piece fits, prerequisite outputs, and relevant interfaces, without duplicating the full task body.
 - **A scope boundary** — exactly which files it may touch (implementer) or which lines it may flag (reviewer: only lines actually modified in this diff, tagged `NEW`; anything on an untouched line is `PRE-EXISTING` and gets discarded, not reported).
 - **An escalation path** — what to do when something is unclear, phrased as permission to stop and ask rather than guess.
 - **A self-review pass before reporting** — did I do the whole task, does this follow repo conventions, are there debug artifacts left behind — so obviously incomplete or sloppy work doesn't reach the orchestrator in the first place.
@@ -145,7 +145,7 @@ Two things override the initial pick regardless of the signal that suggested it:
 |---|---|---|
 | Orchestrator edits a source file directly | Erases the isolation the whole split was designed to provide, and the edit gets no independent review | Always dispatch, never edit directly |
 | Dispatching a reviewer per finished task | Redundant with the consolidated review pass, and misses cross-task issues a per-task view can't see | Let implementers self-check; review the assembled whole once, collectively |
-| Letting a subagent read the plan or diff itself instead of pasting it in | Wastes its context budget and risks it misreading scope | Paste the full task or diff into the dispatch prompt every time |
+| Giving an implementer an unvalidated plan pointer or unrelated plan context | It may choose the wrong task or stale scope | Pass canonical plan path + exact task heading + BASE_SHA + explicit scope/context; reviewers still receive the exact diff slice they inspect |
 | Sharing one reviewer's findings with another before both report | Anchors the second agent's judgment on the first's, destroying the independence that catches more issues in the first place | Keep every reviewer isolated until all have reported; consolidate only after |
 | Retrying a failed task with no change in context, model, or scope | Definition of insanity — nothing about the retry addresses why it failed the first time | Change something concrete before retrying: more context, a stronger model, or a smaller task |
 | Accepting "looks fine" from a reviewer with no file:line evidence | Not an actual review, just a rubber stamp | Re-dispatch once with an explicit instruction to cite evidence; accept only if it still comes back empty on the second try |

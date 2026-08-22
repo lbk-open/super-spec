@@ -9,9 +9,9 @@
 [![skills.sh](https://skills.sh/b/lbk-open/super-spec)](https://skills.sh/lbk-open/super-spec)
 [![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
 
-> 一组 Spec 驱动的 Agent Skills——一条命令完成需求开发与问题修复，产出生产可用代码。
+> 一组 Spec 驱动的 Agent Skills——让需求或修复依次经过计划、实现、验证、评审与交付。
 
-SuperSpec 将一组经过工程实践验证的工作流封装为可移植的
+SuperSpec 将结构化工程工作流封装为可移植的
 [Agent Skills](https://agentskills.io)：覆盖从需求到 PR 的完整流程、多代理 TDD
 编码与并行代码评审、随代码同步演进的 Spec，以及约束 AI 产出安全性与正确性的
 工程护栏（guardrails）。
@@ -74,9 +74,9 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 
 ## 为什么选择 SuperSpec
 
-- **以流程保障产出质量，而非依赖顶级模型。** Spec → 计划 → TDD 实现 →
-  并行多维评审 → 护栏——这条流水线旨在让中档模型也能稳定产出可靠代码，
-  无需寄望于顶级模型的单次完美输出。
+- **以流程保障质量，而非依赖模型光环。** Spec → 计划 → TDD 实现 → 并行多维评审 →
+  护栏——这条流水线通过明确验收、验证证据与独立评审控制质量，而不是寄望于某个模型
+  一次就给出完美结果。
 - **由模型执行工作流，而非由工具驱动。** 工作流本身就是代理可直接执行的 Markdown
   指令：轻量编排、人工确认点、支持断点续跑。无需安装任何编排 CLI、状态机或代码
   生成器——只要代理能够读取 skill，即可运行完整流水线，并在实际情况偏离预设路径时
@@ -108,8 +108,8 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
   Spec 作为验收基线，再拆分为按依赖排序的任务，每个任务的粒度均足以支持测试先行的
   实现与验证。计划文件同时作为持久化状态，便于后续断点续跑。
 - **`ss-coding`** —— 读取计划，将相互独立的任务分组，并行分发给多个 implementer
-  子代理。每个子代理的提示词中包含完整任务文本、相关 delta Spec 与护栏内容，并以
-  测试先行的方式实现。全部任务完成后运行测试套件、调用 `ss-code-review`，依据修复
+  子代理。每个子代理接收权威计划路径与准确任务标题、`BASE_SHA`、精简的依赖/接口
+  上下文、修改范围、验证命令和适用 Spec/护栏路径，只读取该任务并以测试先行的方式实现。全部任务完成后运行测试套件、调用 `ss-code-review`，依据修复
   清单迭代直至裁决为 APPROVED——最终交付一条经测试验证的 commit 与一份人工验收清单。
 - **`ss-code-review`** —— 将 diff 分发给多个视角各异的并行评审代理：通用代码质量、
   护栏与项目规范合规、跨模块集成。评审结果经置信度过滤与去重后，合并为按严重级别
@@ -118,9 +118,12 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
 
 ### 排障
 
-- **`ss-inspect`** —— 分阶段、基于证据的根因分析：先确认症状，再从多个来源
-  （日志、链路追踪、指标、代码、git 历史）收集证据，建立相互竞争的假设并逐一
-  证伪——可能时复现故障——最终产出根因报告，附修复建议与需要改动的仓库清单。
+- **`ss-inspect`** —— 只产出报告、强度自适应的根因分析：L0 Local 使用稳定复现与
+  代码级证据，L1 Runtime 选择单服务中最具区分度的证据源，L2 Systemic 保留完整的
+  跨边界调查。风险或影响面扩大时会复用已有证据并自动升级。分级只改变取证成本，绝不
+  弱化设计理解关卡：所有层级都必须先完整理解证据范围内的职责与归属、实现链路、不变量、
+  既有机制和全部受影响路径，再在正确抽象层设计修复并明确拒绝症状式补丁。该 skill 不
+  修改代码、配置或运行时状态。
 
 ### 工作流
 
@@ -128,11 +131,14 @@ https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
   建分支 → 复杂度分诊 → 技术方案 + *[审批关卡]*（复杂需求；简单需求直接进入计划）→
   计划 → 内建评审的编码 → PR。`ss-coding-workflow` 是较短的路径，从既有计划或直接的
   修改指令开始，跳过方案阶段。两者均支持 full/lite 模式，会话中断后可从产物恢复。
-- **`ss-troubleshooting-workflow`** —— 先运行 `ss-inspect`，在根因确认关卡处暂停，
-  确认后方才建分支，并沿同一编码-评审路径完成修复。
-- **`ss-multi-repo-workflow`** —— 面向跨仓库变更：按仓库拆分工作，在每个仓库中启动
-  一个 headless 代理进程（运行 `ss-coding-workflow`），按依赖关系分批调度，最后将
-  各仓库结果汇总为一份报告。编排者自身不修改代码。
+- **`ss-troubleshooting-workflow`** —— 先运行分级自适应的 `ss-inspect`，要求调查层级、
+  证据预算、设计理解、影响面与修复验证方案均完整，且不存在未处理的升级信号，再在根因
+  确认关卡处暂停；确认后方才建分支，并沿同一编码-评审
+  路径完成修复。已确认的多仓修复范围会在建分支前移交，断点续跑也只复用与同一
+  Problem ID 关联的产物。
+- **`ss-multi-repo-workflow`** —— 面向跨仓库变更：按仓库拆分工作，从每个仓库的真实
+  工作根目录启动一个通过能力检查的 runner，按依赖关系分批调度，并验证每个仓库带证据
+  的结构化结果。runner 可以是原生 child 或 headless 进程；编排者自身不修改代码。
 
 ### Git 交付
 

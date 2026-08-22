@@ -153,11 +153,11 @@ On start, probe for existing artifacts and skip completed steps:
 
 | Step | Completion check | On hit |
 |------|-------------------|--------|
-| `ss-create-branch` | Current branch is not the trunk/default branch, or a worktree already exists for this requirement's branch | Reuse the branch; if it lives in a worktree, switch into it |
-| Proposal | `docs/proposals/` has a recent file matching this requirement | Reuse it (this implies the complex path); if unsure, list candidates and ask (autonomous mode picks the most recent) |
-| `ss-plan` | `docs/plans/` has a structured plan (contains task/file sections) | Reuse, skip |
-| `ss-coding` | Every task in the plan is checked off | Skip coding, go straight to the review-acceptance loop |
-| `ss-create-pr` | The branch already has an open PR | Report the existing PR link and finish |
+| `ss-create-branch` | The branch/worktree is explicitly linked to this exact requirement identity | Reuse/switch only when identity matches |
+| Proposal | A proposal explicitly links to this requirement identity | Reuse it (this implies the complex path); recency alone is insufficient |
+| `ss-plan` | A structured plan links to this exact requirement/proposal and has a freshness-valid `**BASE_SHA:**` | Reuse after freshness validation |
+| `ss-coding` | Every task in that exact plan is checked; built-in review is `APPROVED`; full verification matches current HEAD; tree is clean | Skip coding; stale checkboxes or evidence from another plan/ref never count |
+| `ss-create-pr` | An open PR is linked to the identity-matched branch/plan and complete SUCCESS evidence proves current APPROVED review, full verification, clean tree, and `test_verified_ref == delivered_ref` | Report the existing PR link and finish; an open PR alone is insufficient |
 
 ## Process
 
@@ -181,8 +181,8 @@ On start, probe for existing artifacts and skip completed steps:
    hand off to `ss-multi-repo-workflow` and stop.
 7. **`ss-coding`** — execute the plan. It already covers TDD, spec-compliance checks,
    and test verification, and enforces its own post-coding review before returning a verdict.
-8. **Review-acceptance loop** — drive acceptance from the verdict (below) until it passes or the
-   remaining findings are judged invalid.
+8. **Review-acceptance loop** — adjudicate findings and feed valid fixes or invalid-finding reasons
+   back into `ss-coding` until its fresh built-in review returns literal `APPROVED`, or escalate.
 9. **Delivery** *(full mode)* — call `ss-create-pr` to archive any delta spec, rebase, and open the
    PR; report the link, target branch, and status, plus a reminder that `ss-cleanup` removes the
    worktree and branch after merge. *(lite mode)* — commit with a conventional-commits message
@@ -203,9 +203,11 @@ it drives acceptance automatically:
      "simplified for now") must never be judged invalid as "by design" or "out of scope" unless
      the user explicitly approved that scope adjustment earlier — cite that approval in the
      judgment record.
-4. All judged invalid → treat as passed (with the judgment record) and go to delivery.
-5. Valid findings remain → call `ss-coding` again for just those findings (it re-codes
-   and reruns review internally) → back to step 1.
+4. All judged invalid → pass the complete adjudication record back to `ss-coding` and require a
+   fresh built-in review of the current diff. Only literal `APPROVED` proceeds to delivery; if it
+   cannot be obtained, escalate instead of rewriting the verdict.
+5. Valid findings remain → call `ss-coding` again for just those findings (it re-codes and reruns
+   review internally) → back to step 1.
 
 **Convergence protection:**
 - Cap workflow-level rounds at 3 (independent of `ss-coding`'s internal rounds). If

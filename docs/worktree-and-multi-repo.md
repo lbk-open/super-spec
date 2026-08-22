@@ -120,24 +120,24 @@ Worktree isolation is about *where* work happens — a separate directory versus
 
 The obvious-looking shortcut — give one agent session access to two repositories' directories and let it work across both — breaks down for a structural reason, not a permissions one: a repo's own configuration (its conventions file, its spec baseline, anything that shapes how an agent should behave in that codebase) is scoped to that repo's root. Handing a session extra directory access doesn't load any of that; it only grants file access. The agent ends up working in a second codebase with none of the context that makes it behave correctly there.
 
-Nesting a sub-orchestrator per repository — one agent that spawns a second layer of agents for each repo, each of which spawns its own implementers — sounds like the natural fix, but runs into hard platform limits: most agent CLIs cap how many layers of sub-agents can nest, and even where nesting is technically permitted, it doesn't solve the configuration-loading problem above, because a nested sub-agent still runs inside the *parent's* directory-scoped session rather than a fresh one rooted in the target repo.
+A generic nested sub-agent is not automatically the answer: extra path access does not load the target repository's configuration, and many hosts cannot guarantee an independent child cwd or enough delegation depth for that child to run its own implementers and reviewers. A native child becomes a valid repository runner only when the host proves an absolute per-child cwd, fresh repository context and skills, nested delegation, observable lifecycle, structured results, and exact run identity.
 
-### The design: one independent process per repository
+### The design: one repository-scoped runner per repository
 
-The one thing every major agent CLI supports is running itself **headlessly** — a fire-and-forget invocation, given a prompt, that runs to completion without a human in the loop. That's the actual building block: for each repository involved, start a separate, independent agent process with its working directory set to that repository's root.
+The portable abstraction is a **repository runner**, not a particular process API. When the host proves all native-child guarantees above, the runner may be a child execution unit under the parent session. Otherwise it is a fresh headless process. Either way, it starts from the target repository's real working root, runs unattended, executes the stock `ss-coding-workflow`, and reports through the same result contract.
 
 ```mermaid
 flowchart TB
     subgraph orch["Orchestrating session (any directory)"]
         O["Read the master plan\nBatch by dependency order\nMonitor + collect results\nSummarize"]
     end
-    subgraph repoA["Repo A — independent process"]
-        A1["cd repo-a && run headlessly"]
+    subgraph repoA["Repo A — repository runner"]
+        A1["real cwd = repo-a\nrun unattended"]
         A2["loads repo A's own config/spec baseline"]
         A3["spawns its own implementer/reviewer sub-agents"]
     end
-    subgraph repoB["Repo B — independent process"]
-        B1["cd repo-b && run headlessly"]
+    subgraph repoB["Repo B — repository runner"]
+        B1["real cwd = repo-b\nrun unattended"]
         B2["loads repo B's own config/spec baseline"]
         B3["spawns its own implementer/reviewer sub-agents"]
     end
@@ -149,9 +149,9 @@ flowchart TB
     B3 -->|"structured result"| O
 ```
 
-Because the process for repo A actually `cd`s into repo A before starting, it naturally loads repo A's own configuration and spec baseline — the "which context applies here" problem disappears by construction, without any extra plumbing. And because each of those processes is a complete, independent agent instance, it's free to spawn its own internal sub-agents for implementation and review exactly as it would for a single-repo task — the "two layers of parallelism" aren't nested inside one session; they're two genuinely separate layers, process-level isolation on the outside and normal sub-agent parallelism on the inside.
+Because each runner really starts in its target repository, it naturally loads the correct configuration and spec baseline — the "which context applies here" problem disappears by construction. It must also retain enough delegation depth to run the same internal implementation and review fanout as an ordinary single-repository workflow.
 
-The isolation this buys is between repositories, not a security sandbox — every agent CLI's internal sandboxing has known gaps once nesting or unattended automation is involved, so the actual safety boundary here is the surrounding environment: a trusted development machine or container, branch protection on the target repositories, and human review of the resulting pull requests. Don't rely on any agent's internal sandbox to be the last line of defense in a multi-process setup like this.
+Adapter readiness fails closed. The orchestrator proves cwd, context, nested-delegation, lifecycle, result, and exact-identity guarantees before launch; it never silently falls back mid-run. The isolation this buys is between changes, not a security sandbox. The actual safety boundary remains the surrounding trusted machine/container, branch protection, and human review.
 
 ### The orchestrator's job, and what it explicitly doesn't do
 
@@ -159,37 +159,47 @@ The orchestrating session is deliberately thin. It:
 
 - Reads (or, if only a requirement description was given, first produces) a **master plan** naming every repository involved, their local paths, which batch each belongs to, and any dependency between batches.
 - Presents that plan for a **go/no-go confirmation** before dispatching anything — with multiple repositories about to be changed at once, this is a stronger gate than a single-repo workflow needs, and skipping it should require an explicit opt-in, not be the default.
-- Copies each repository's own slice of the plan into that repository before starting its process — a sub-process should never have to reach across repository boundaries to find its own instructions.
-- Dispatches one independent process per repository in the current batch, running them in parallel; batches with a dependency between them run one after another, never overlapping.
-- Waits for a structured result from each process (see below), and checks every single one individually rather than treating "most of them succeeded" as good enough.
+- Copies each repository's own slice of the plan into that repository before starting its runner — a runner should never have to reach across repository boundaries to find its own instructions.
+- Launches one repository runner per repository in the current batch, running them in parallel; batches with a dependency between them run one after another, never overlapping.
+- Captures an exact execution identity at launch, waits for terminal lifecycle plus a valid structured result from each runner, and checks every single one individually rather than treating "most of them succeeded" as good enough.
 - On completion, produces one cross-repository summary: what shipped where, what still needs human sign-off, and a suggested merge order when one repository's change depends on another's.
 
-What it never does: touch source code in any of the target repositories, or make an implementation decision on their behalf. Every actual line of code is written by a per-repository process, inside its own repository, using the same review-and-verification path a single-repo change would go through.
+What it never does: touch source code in any of the target repositories, or make an implementation decision on their behalf. Every actual line of code is written by a per-repository runner, inside its own repository, using the same review-and-verification path a single-repo change would go through.
 
 ### Ground rules the orchestrator holds itself to
 
-- **Every dispatched process runs unattended.** A process with nobody available to answer a mid-task question will simply hang until it times out, so any decision that genuinely needs a human has to happen either before dispatch (as part of the go/no-go gate) or after a process reports back blocked (as an escalation) — never by expecting an answer mid-run.
-- **Parallelism only within a batch; batches run in dependency order.** If repo B's process consumes an API that repo A's process is introducing, A's batch has to fully complete before B's batch starts.
-- **A repository's slice of the plan is delivered to it before its process starts** — never fetched by the process reaching outside its own directory.
+- **Every runner runs unattended and does not own product decisions.** A native attention channel may surface a question to the parent; a headless process must not wait for interactive input. Human decisions happen before dispatch or after escalation.
+- **Parallelism only within a batch; batches run in dependency order.** If repo B's runner consumes an API that repo A's runner is introducing, A's batch has to fully complete before B's batch starts.
+- **A repository's slice of the plan is delivered to it before its runner starts** — never fetched by reaching outside its own directory.
+- **Resume uses exact identity.** Capture the process session ID or native run/task ID at launch; never resume an ambiguous "latest" execution when repositories run in parallel.
 - **Every repository's result is checked, not sampled.** A summary that reports overall success while quietly omitting one failing repository is worse than no summary.
 - **No unauthorized scope-cutting.** If five repositories were in scope, the job isn't done until all five have shipped or a specific one has been explicitly deferred with the user's sign-off — never silently narrowed to "the ones that worked."
 
 ### Reading results back
 
-For an orchestrator to make batch-to-batch decisions programmatically, each per-repository process needs to end with something machine-parseable rather than free-form prose. A fixed result block at the end of its final output — status, branch name, pull request URL, review verdict, verified test commit, and task completion count — lets the orchestrator `grep` it out of the process's log reliably:
+For an orchestrator to make batch-to-batch decisions programmatically, each per-repository runner needs to end with machine-parseable evidence rather than free-form prose. The exact shared block is delimited by `---SS-RESULT---` / `---END-SS-RESULT---`; object and array values are compact JSON on one line:
 
-```
----RESULT---
+```text
+---SS-RESULT---
 status: SUCCESS | FAILED | BLOCKED
+input_identity: {"kind":"plan","path":"docs/plans/2026-07-03-refund-payment.md","problem_id":null}
 branch: feat/refund-support
-pr_url: https://github.com/<owner>/<repo>/pull/123
+delivery: https://github.com/<owner>/<repo>/pull/123
+delivered_ref: abc1234
 review_verdict: APPROVED
+test_verified_ref: abc1234
+test_evidence: {"command":"./scripts/validate.sh","result":"passed","summary":"all checks passed"}
 tasks_completed: 5/5
-blocker: <one-line reason, only when status isn't SUCCESS>
----END-RESULT---
+changed_files: ["src/refund.ts", "test/refund.test.ts"]
+commands_run: [{"command":"./scripts/validate.sh","result":"passed","summary":"all checks passed"}]
+residual_risks: []
+clean_worktree: true
+---END-SS-RESULT---
 ```
 
-A `FAILED` or `BLOCKED` result triggers a look at that repository's own log to find the cause. Something transient (a flaky network call, a bit of missing context) can be worth a bounded number of automatic retries; anything else pauses the whole workflow and escalates to the user with the failing repository's log excerpt attached — while letting the rest of the current batch run to completion rather than blocking on the one repository that's stuck.
+`input_identity` uses the canonical compact JSON shape defined by `ss-coding-workflow` (fixed key order; exact repo-relative POSIX plan path; exact Problem ID JSON string or `null`). For example, a troubleshooting sub-plan uses `{"kind":"plan","path":"docs/plans/fix-payment.md","problem_id":"ALERT-123"}`. `SUCCESS` is accepted only when that identity exactly matches the dispatched sub-plan, delivery exists, `delivered_ref` identifies the commit at that location, review is approved, all tasks are complete, the full verification command passed with `test_verified_ref == delivered_ref`, changed files are present, residual risks are disclosed, and the worktree is clean. Missing or contradictory evidence is failure even when surrounding prose claims success.
+
+A `FAILED` or `BLOCKED` result triggers inspection of that runner's terminal evidence. Something transient can be worth a bounded number of exact-identity resumes; anything else pauses the workflow and escalates with the failing repository's evidence while letting healthy runners in the same batch finish.
 
 ### When a single-repo workflow discovers it isn't single-repo after all
 
@@ -199,12 +209,12 @@ A rough ordering of how confidently that hand-off should be triggered:
 
 | Confidence | Signal | Action |
 |---|---|---|
-| Certain | A plan explicitly names more than one repository, or several sub-plans each name a different repository | Hand off directly |
+| Certain | A plan explicitly names more than one repository; several sub-plans each name a different repository; or a complete, confirmed investigation report's `**Repositories Requiring Fix:**` names more than one repository | Hand off directly; confirmed investigation scope cannot be downgraded later |
 | High | File paths in a plan point outside the current repository's root; a written proposal explicitly lists more than one affected repository | Ask for confirmation, then hand off |
 | Heuristic | The original request names two or more services/repos by name in plain language | Ask, showing the evidence for why this looks cross-repo |
 | Not a signal | A shared API-contract repository being touched separately; a documentation reference to another service without touching its code; multiple modules changing inside one repository | Stays single-repo |
 
-Whichever workflow detects the hand-off carries along everything already produced — the original request, any draft plan or branch, and which confidence level triggered the move — so the multi-repo workflow can pick up from there instead of starting over.
+Whichever workflow detects the hand-off carries along the stable original-input identity (`**Problem ID:**` for troubleshooting), every exact artifact path already produced, and the detection evidence. The multi-repo workflow reuses only artifacts linked to that identity; recency alone is insufficient.
 
 ### Mapping to the skills
 
@@ -212,6 +222,6 @@ Whichever workflow detects the hand-off carries along everything already produce
 |---|---|
 | Deciding on and creating an isolated worktree for a single repository's branch | `ss-create-branch` |
 | Removing a worktree and its branch once a change has shipped | `ss-cleanup` |
-| Reading (or producing) a master plan, dispatching one process per repository, batching by dependency, and rolling up results | `ss-multi-repo-workflow` |
+| Reading (or producing) a master plan, launching one repository-scoped runner per repository, batching by dependency, and rolling up results | `ss-multi-repo-workflow` |
 
-Everything a per-repository process does once it's running — creating its own branch, developing, running review, archiving a delta spec, opening a pull request — is the same single-repo path described elsewhere in this project, invoked with exactly the same skills a human working in that one repository would use directly. Multi-repo orchestration doesn't introduce a second way of doing that work; it just decides *when* and *where* to kick off however many copies of it need to run at once.
+Everything a per-repository runner does once it's running — creating its own branch, developing, running review, archiving a delta spec, opening a pull request — is the same single-repo path described elsewhere in this project, invoked with exactly the same skills a human working in that one repository would use directly. Multi-repo orchestration doesn't introduce a second implementation path; it only decides *when* and *where* to launch each copy.

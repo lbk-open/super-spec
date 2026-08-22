@@ -9,9 +9,14 @@ condensed copy of this table; if the two ever disagree, this file is authoritati
 
 | Level | Signal | Action |
 |---|---|---|
-| **Deterministic** | The input or a produced plan is a master plan (`docs/plans/*-master.md` whose header has a `**Repos:**` table with more than one row), or the plan set contains multiple sub-plans each carrying a `**Repo:**` field | Hand off immediately. Under an autonomous/no-questions mode, no confirmation is asked. |
-| **High confidence** | A plan's file list contains paths outside the current repository root (`../<other-repo>/...`, or absolute paths outside the repo); a proposal's `**Repositories Involved:**` list has more than one entry; a root-cause report's `**Repositories Requiring Fix:**` list has more than one entry | Ask the user to confirm hand-off, showing the evidence. Autonomous mode hands off automatically. |
+| **Deterministic** | The input or a produced plan is a master plan (`docs/plans/*-master.md` whose header has a `**Repos:**` table with more than one row); the plan set contains multiple sub-plans each carrying a `**Repo:**` field; or a complete, user-confirmed investigation report has a matching `**Problem ID:**` and a `**Repositories Requiring Fix:**` list with more than one entry | Hand off immediately. A confirmed investigation's repository scope is authoritative and must not be downgraded by later planning. |
+| **High confidence** | A plan's file list contains paths outside the current repository root (`../<other-repo>/...`, or absolute paths outside the repo), or a proposal's `**Repositories Involved:**` list has more than one entry | Ask the user to confirm hand-off, showing the evidence. Autonomous mode hands off automatically. |
 | **Heuristic** | The requirement, PRD, or root-cause narrative explicitly names two or more services/apps/repositories whose code must change; or a backend+frontend requirement where the current repo covers only one side | Ask the user, showing the evidence sentence(s). Autonomous mode hands off automatically. |
+
+For investigation reports, parse only bullet entries immediately under the exact
+`**Repositories Requiring Fix:**` label; one bullet equals one repository. An inline comma-separated
+value, an empty list, or a report without the dedicated `**Affected Paths:**` bullet list is
+incomplete and cannot trigger deterministic hand-off.
 
 ## Exclusions — not multi-repo signals
 
@@ -28,8 +33,8 @@ When a workflow decides — or the user confirms — to hand off:
 
 1. Pass to `ss-multi-repo-workflow`:
    - the original input (requirement link/text, issue reference, or master-plan path);
-   - paths of artifacts already produced (proposal, plans, root-cause report, branch name);
+   - the stable original-input identity (`**Problem ID:**` for troubleshooting) and paths of artifacts already produced (proposal, plans, root-cause report, branch name);
    - the automation flags already in effect (skip-gates / decide-autonomously);
    - the detection evidence (which signal fired), so its own confirmation gate can display it.
 2. The single-repo workflow prints one line explaining the hand-off and **terminates** — it must not run further steps of its own.
-3. `ss-multi-repo-workflow` skips already-completed stages via its own artifact probing (resume detection); nothing is redone.
+3. `ss-multi-repo-workflow` reuses only artifacts explicitly linked to the same original-input identity and exact upstream artifact. Recency alone is never sufficient.

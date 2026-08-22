@@ -6,7 +6,7 @@ review, PR delivery, troubleshooting — as a single set of [Agent Skills](https
 that runs unmodified on Claude Code, OpenAI Codex, Pi, and OpenCode.
 
 This document explains the reasoning behind that design and how the pieces fit
-together. For the rules that keep AI-generated code safe and correct, see
+together. For the explicit safety and correctness checks used by the skills, see
 [guardrails.md](./guardrails.md).
 
 ## Why This Exists
@@ -138,11 +138,11 @@ group into six categories:
 | Category | Skills | What they do |
 |---|---|---|
 | **Spec** | `ss-write-spec`, `ss-show-spec`, `ss-list-changes`, `ss-trace-spec`, `ss-archive`, `ss-reverse-spec` | Maintain living specs as an [OpenSpec](https://github.com/Fission-AI/OpenSpec)-style delta workflow: draft a change, inspect current capability specs and their history, fold an approved change back into the baseline, or derive a baseline from existing (brownfield) code |
-| **Workflow** | `ss-plan`, `ss-coding-workflow`, `ss-feature-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` | Turn a requirement into an executable task plan and orchestrate the end-to-end paths — feature delivery, bug fix, plain coding change, or a multi-repository rollout — through branch, code, review, and PR |
+| **Workflow** | `ss-plan`, `ss-coding-workflow`, `ss-feature-workflow`, `ss-troubleshooting-workflow`, `ss-multi-repo-workflow` | Turn a requirement into an executable task plan and orchestrate end-to-end delivery. Troubleshooting confirms a report-only, impact-scoped diagnosis before any branch; multi-repo delivery uses one capability-checked repository runner per real repo cwd and a shared evidence-bearing result contract |
 | **Multi-agent** | `ss-coding`, `ss-code-review` | Fan work out across parallel subagents: test-driven implementation split by independent task, and code review split by concern (security, standards, error handling, performance, test coverage) |
 | **Proposal** | `ss-proposal` | Turn a requirement into a structured, high-level technical proposal — architecture, interfaces, trade-offs — before anyone writes code |
 | **Git** | `ss-create-branch`, `ss-create-pr`, `ss-cleanup` | Handle the git mechanics: cut a branch (with an optional isolated worktree), open a pull request once quality gates pass, and tear down the branch/worktree afterward |
-| **Diagnostics** | `ss-inspect` | Root-cause a live issue through a staged, evidence-driven process |
+| **Diagnostics** | `ss-inspect` | Produce a report-only, evidence-driven root-cause analysis with adaptive evidence budgets but an invariant design-understanding gate: understand the complete relevant implementation and ownership first, then design repair at the correct abstraction while rejecting symptom patches |
 
 `ss-guardrails` and `ss-references` sit outside this table on purpose — they aren't
 things you invoke as a task, they're the shared rulebook and the shared templates the
