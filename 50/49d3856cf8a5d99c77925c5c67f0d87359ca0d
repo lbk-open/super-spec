@@ -1,0 +1,24 @@
+.github/workflows/release-please.yml
+  h_6be99a8ac68ab0 15,17-45
+CHANGELOG.md
+  h_6be99a8ac68ab0 3,8-9
+RELEASING.md
+  h_6be99a8ac68ab0 21-66
+scripts/release-automation.mjs
+  h_6be99a8ac68ab0 1-33
+scripts/release-text.mjs
+  h_6be99a8ac68ab0 1-233
+scripts/tests/release-text.test.mjs
+  h_6be99a8ac68ab0 1-246
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5049d3856cf8a5d99c77925c5c67f0d87359ca0d",
+  "prompts": {},
+  "humans": {
+    "h_6be99a8ac68ab0": {
+      "author": "LIYUE <liyue2008@gmail.com>"
+    }
+  }
+}
