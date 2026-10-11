@@ -1,32 +1,25 @@
 ---
 name: ss-references
-description: A library of shared templates that other ss-* skills read at runtime — subagent dispatch prompts, the technical-proposal template and its quality checklist, the OpenSpec directory skeleton, and the multi-repo detection rules. Not invoked directly by users; skills like ss-coding, ss-proposal, ss-write-spec, and the workflows read the file they need before producing an artifact.
+description: Shared prompt policies and templates for workflow context, ownership, OpenSpec deltas, proposals and repository routing; not a standalone workflow.
 ---
 
 # Shared References
 
-This skill is a template library, not a workflow. It has no standalone "run"
-behavior. Other skills read one of the files below at the exact point where they
-need to dispatch a subagent, generate an artifact, or make a routing decision.
+Other skills read these files on demand; this library is not invoked directly.
 
-## What's Here
+| Reference | Purpose |
+| --- | --- |
+| [workflow-common.md](workflow-common.md) | Invocation flags, scope, gates, ordered quality chain |
+| [workflow-checkpoint.md](workflow-checkpoint.md) | One protected external checkpoint, identities, current evidence, recovery |
+| [agent-discipline.md](agent-discipline.md) | Continuous owner, fresh reviewers, retained verifier and safe waiting |
+| [openspec-delta.md](openspec-delta.md) | Proposal/delta before gate, staging and materialization/archive |
+| [implementer-prompt.md](implementer-prompt.md) | Owner handoff and focused TDD |
+| [proposal-template.md](proposal-template.md) | Architecture/API/UI proposal structure |
+| [proposal-writing.md](proposal-writing.md) | Proposal quality checklist |
+| [openspec-skeleton.md](openspec-skeleton.md) | Authorized OpenSpec bootstrap |
+| [multi-repo-detection.md](multi-repo-detection.md) | Evidence-backed repository routing |
 
-| File | Covers | Read When |
-|---|---|---|
-| `implementer-prompt.md` | The dispatch prompt shape for implementer subagents | Before dispatching an implementer (`ss-coding`) |
-| `proposal-template.md` | Section-by-section structure of a technical proposal | Before writing a proposal (`ss-proposal`) |
-| `proposal-writing.md` | Quality-standards checklist a proposal must pass | During a proposal's self-review (`ss-proposal`) |
-| `openspec-skeleton.md` | The `openspec/` directory skeleton for a project that has none | Before writing specs into a project without an `openspec/` tree (`ss-write-spec`, `ss-reverse-spec`) |
-| `multi-repo-detection.md` | Rules for deciding whether a requirement spans repositories | At a workflow's entrance, and after a proposal records its repository list |
-
-## How Other Skills Reach It
-
-Skills reference these files by sibling relative path — `../ss-references/<file>.md`
-— which resolves both in this repository and after an install flattens every skill
-directory into the same parent (`~/.agents/skills/`). This directory is a skill, and
-not a bare folder, precisely so that installers carry it along: the `skills` CLI only
-copies directories that contain a `SKILL.md`.
-
-Because of that, the skills here must be installed as a bundle. Installing a single
-skill on its own (for example `--skill ss-coding`) leaves its `../ss-references/…`
-reads dangling.
+Keep every ss-* directory side by side when installing the whole bundle. Sibling
+references must resolve after copying skills. Shared policy is prompt-first: no
+mandatory Node helper, signing engine, artifact database, package or coordinator.
+Repository static tests use Node; executing workflows does not require Node.

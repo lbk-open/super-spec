@@ -1,231 +1,83 @@
 # SuperSpec
 
-[English](README.md) | 简体中文
+[English](README.md) | 简体中文 · [Apache-2.0 许可证](LICENSE)
 
-[![CI](https://img.shields.io/github/actions/workflow/status/lbk-open/super-spec/ci.yml?branch=main&label=ci)](https://github.com/lbk-open/super-spec/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/lbk-open/super-spec?label=release)](https://github.com/lbk-open/super-spec/releases)
-[![License](https://img.shields.io/github/license/lbk-open/super-spec)](LICENSE)
-[![npm](https://img.shields.io/npm/v/@lbk-open/super-spec?label=npm)](https://www.npmjs.com/package/@lbk-open/super-spec)
-[![skills.sh](https://skills.sh/b/lbk-open/super-spec)](https://skills.sh/lbk-open/super-spec)
-[![Works with Claude Code · Codex · Pi · OpenCode](https://img.shields.io/badge/Works_with-Claude_Code_%C2%B7_Codex_%C2%B7_Pi_%C2%B7_OpenCode-6E56CF)](https://github.com/lbk-open/super-spec)
+SuperSpec 把功能交付、编码、根因调查、独立评审和兼容 OpenSpec 的持续规格整理成
+可移植的 Agent Skills（供编程助手读取的工作说明）。Claude Code、Codex、Pi 和
+OpenCode 共用一套文件，不需要安装工作流运行引擎。
 
-> 一组 Spec 驱动的 Agent Skills——让需求或修复依次经过计划、实现、验证、评审与交付。
+## 从本地开始
 
-SuperSpec 将结构化工程工作流封装为可移植的
-[Agent Skills](https://agentskills.io)：覆盖从需求到 PR 的完整流程、多代理 TDD
-编码与并行代码评审、随代码同步演进的 Spec，以及约束 AI 产出安全性与正确性的
-工程护栏（guardrails）。
+使用当前检出目录和 [INSTALL.md](INSTALL.md)，不假定存在公开仓库地址或已发布的
+注册表包。安装前必须明确用户选择的助手和项目/全局范围。安装后可以说：
 
-支持 **Claude Code**、**OpenAI Codex**、**Pi** 与 **OpenCode** 四种运行时——
-共用同一份 `SKILL.md`，无需按平台单独构建。设计上借鉴了
-[superpowers](https://github.com/obra/superpowers) 与
-[OpenSpec](https://github.com/Fission-AI/OpenSpec) 两个开源项目，并与 OpenSpec
-的目录规范完全兼容。
+- 使用 ss-feature-workflow 实现这个需求。
+- 使用 ss-coding-workflow 的 lite 模式执行这个已批准计划。
+- 使用 ss-troubleshooting-workflow 调查并修复这个问题。
 
-## 快速开始
+全部 20 个 ss-* 目录必须并排安装，包括 ss-references 和 ss-guardrails。
+更改助手发现目录需要用户同意；工作流不会为了恢复而自动安装依赖或修改全局配置。
 
-推荐交由 AI 代理完成安装——将以下内容粘贴到任意代理会话中（Claude Code、
-Codex、Pi、OpenCode 均可）：
+## 交付方式
 
-```
-Install SuperSpec by following the instructions here:
-https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
-```
+每个共享代码边界由同一个持续负责人调查、规划、编码和修复。主助手只负责调度和
+裁决，子助手继承父助手实际模型。负责人先用定向测试证明行为失败，再做最小修复，
+最后重构并检查相关回归。新的只读独立评审完成后，唯一保留的验证助手才运行全量
+检查。评审缺失或真实测试失败都不能宣称完成；修复交回原负责人，进行新的影响评审
+并由原验证助手重新验证。
 
-随后按任务类型让代理执行相应的工作流：
+提案和适用规格变更必须在提案批准之前完成并验证。修复首先用证据确认根因；恢复
+已有承诺且语义不变时，可以提供明确的规格依据和无需变更规格的理由。批准前不能
+写项目时，使用受保护的外部验证镜像。复用简短计划，落入完全相同的已批准内容，
+在评审之前归档规格并完成必要的变基。仅在已有 Git 写入授权时，于评审之前完成
+必要提交；拉取请求只能使用已经评审和全量验证绑定的提交身份，否则如实交付本地
+结果。评审、全量验证和交付绑定当前实际输入，包括 HEAD、索引和差异，不能只看
+文件内容相同；发布阶段不能晚提交、偷偷修复或变基。
 
-- *"Use ss-feature-workflow to implement this requirement: …"* ——
-  复杂度分诊 → 技术方案（仅复杂需求）→ 执行计划 → 多代理编码 → 评审 → PR，
-  关键节点设有人工确认。
-- *"Use ss-coding-workflow in lite mode on this plan"* ——
-  在当前分支完成编码与评审，无需创建 PR。
-- *"Use ss-troubleshooting-workflow: production alert says …"* ——
-  基于证据的根因分析，随后修复并交付。
+参数只影响本次调用：--auto/-a 自动完成符合条件的政策关卡，不伪造人工批准；
+--decide/-d 允许在有界选项中做决定，但不能跳过关卡。--worktree/-w 和
+--no-worktree/-W 选择获准的工作目录。支持 -adw/-daW 组合，-wW 冲突必须停止。
+交接和恢复保留参数、人工/自动/待完成的关卡状态、范围和工作目录，使用一个受保护
+的外部检查点。不能替换状态不明的写入者，也不能自动切换命令行协议或模型。
 
-也可直接调用任意单个 skill——每个 `SKILL.md` 均完整说明了输入与执行步骤。
+full 模式交付真实的拉取请求，或在权限限制下如实交付本地结果；lite 模式本地交付，
+质量要求相同。二者都不自动授权合并、部署、发布、破坏性清理或扩大范围。多仓库
+必须具备真实的原生工作目录、子助手调度和终态结果能力，并明确依赖顺序。
 
-## 安装
+## 技能目录
 
-**推荐交由 AI 代理完成安装。** [INSTALL.md](INSTALL.md) 是一份面向代理执行的安装文档，
-涵盖平台选择、安装、校验与命名冲突检查。将以下内容粘贴到代理会话即可：
-
-```
-Install SuperSpec by following the instructions here:
-https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
-```
-
-如需手动安装，简要步骤如下：
-
-- **Claude Code** —— `/plugin marketplace add lbk-open/super-spec`，随后
-  `/plugin install super-spec@super-spec`。安装后以 `/ss-*` 命令形式提供。
-- **OpenAI Codex** —— `codex plugin marketplace add https://github.com/lbk-open/super-spec`，
-  随后 `codex plugin add super-spec@super-spec`。更新执行
-  `codex plugin marketplace upgrade super-spec`。
-- **Pi** —— `pi install npm:@lbk-open/super-spec`（不指定版本号）。
-  更新执行 `pi update --all`。
-- **OpenCode** —— `npx skills add lbk-open/super-spec -a opencode`。更新执行
-  `npx skills update`。
-- **手动兜底（Codex / Pi / OpenCode）** —— 将 `skills/*` 拷贝到
-  `~/.agents/skills/`（三者共用该发现路径），并保持所有 `ss-*` 目录同级——
-  其中 `ss-guardrails` 与 `ss-references` 是其他技能运行时读取的共享库，
-  缺一不可。项目级安装则放入 `<repo>/.agents/skills/`。
-
-完整的安装、升级与卸载说明见 [INSTALL.md](INSTALL.md)。
-
-## 为什么选择 SuperSpec
-
-- **以流程保障质量，而非依赖模型光环。** Spec → 计划 → TDD 实现 → 并行多维评审 →
-  护栏——这条流水线通过明确验收、验证证据与独立评审控制质量，而不是寄望于某个模型
-  一次就给出完美结果。
-- **由模型执行工作流，而非由工具驱动。** 工作流本身就是代理可直接执行的 Markdown
-  指令：轻量编排、人工确认点、支持断点续跑。无需安装任何编排 CLI、状态机或代码
-  生成器——只要代理能够读取 skill，即可运行完整流水线，并在实际情况偏离预设路径时
-  自行调整。
-- **端到端覆盖，而非零散片段。** 需求开发、编码与排障均贯通从需求到 PR 的完整链路，
-  在关键决策点设置确认关卡，会话中断后可基于已有产物恢复执行。
-- **full 与 lite 双交付模式。** 既可走完整的建分支 → PR 流程，也可在当前分支就地
-  开发、以规范的 conventional commits 收尾。两种模式的质量关卡完全一致。
-- **多代理编码与评审。** TDD 实现分发至并行子代理，再由评审组（质量、Spec 合规、
-  集成）给出按严重级别分级的裁决，并在有限轮次内驱动修复循环。
-- **Spec 随代码演进，兼容 OpenSpec。** 以 delta Spec 管理变更——编写 → 归档 → 追溯，
-  遵循 [OpenSpec](https://github.com/Fission-AI/OpenSpec) 规范（`openspec/specs`、
-  `openspec/changes`、归档生命周期）。由 OpenSpec CLI 初始化的仓库可直接使用
-  SuperSpec 的 Spec 类 skills，反之亦然。
-- **仅设护栏，不约束代码风格。** 安全红线、评审标准、测试原则，以及面向 AI 代理的
-  防错规则（通用核心 + 按语言清单）。护栏从不写入用户项目，由 skills 在运行时按需
-  读取。
-
-## 工作原理
-
-关键 skill 执行时的具体行为：
-
-### 开发
-
-- **`ss-proposal`** —— 读取需求或 PRD，将其收敛至当前仓库的职责边界内，分析既有
-  架构与约定，随后在 `docs/proposals/` 生成一份高层设计方案：架构与数据流、关键
-  接口、备选方案与权衡、风险、里程碑。产出须经自评审（条件允许时另加独立评审）把关。
-- **`ss-plan`** —— 将方案或需求拆解为可执行的任务计划：先生成 OpenSpec delta
-  Spec 作为验收基线，再拆分为按依赖排序的任务，每个任务的粒度均足以支持测试先行的
-  实现与验证。计划文件同时作为持久化状态，便于后续断点续跑。
-- **`ss-coding`** —— 读取计划，将相互独立的任务分组，并行分发给多个 implementer
-  子代理。每个子代理接收权威计划路径与准确任务标题、`BASE_SHA`、精简的依赖/接口
-  上下文、修改范围、验证命令和适用 Spec/护栏路径，只读取该任务并以测试先行的方式实现。全部任务完成后运行测试套件、调用 `ss-code-review`，依据修复
-  清单迭代直至裁决为 APPROVED——最终交付一条经测试验证的 commit 与一份人工验收清单。
-- **`ss-code-review`** —— 将 diff 分发给多个视角各异的并行评审代理：通用代码质量、
-  护栏与项目规范合规、跨模块集成。评审结果经置信度过滤与去重后，合并为按严重级别
-  分级的裁决（APPROVED / NEEDS_CHANGES / CRITICAL_ISSUES），并附 `ss-coding` 可
-  直接执行的结构化修复清单。
-
-### 排障
-
-- **`ss-inspect`** —— 只产出报告、强度自适应的根因分析：L0 Local 使用稳定复现与
-  代码级证据，L1 Runtime 选择单服务中最具区分度的证据源，L2 Systemic 保留完整的
-  跨边界调查。风险或影响面扩大时会复用已有证据并自动升级。分级只改变取证成本，绝不
-  弱化设计理解关卡：所有层级都必须先完整理解证据范围内的职责与归属、实现链路、不变量、
-  既有机制和全部受影响路径，再在正确抽象层设计修复并明确拒绝症状式补丁。该 skill 不
-  修改代码、配置或运行时状态。
-
-### 工作流
-
-- **`ss-feature-workflow` / `ss-coding-workflow`** —— 对上述 skill 的轻量编排：
-  建分支 → 复杂度分诊 → 技术方案 + *[审批关卡]*（复杂需求；简单需求直接进入计划）→
-  计划 → 内建评审的编码 → PR。`ss-coding-workflow` 是较短的路径，从既有计划或直接的
-  修改指令开始，跳过方案阶段。两者均支持 full/lite 模式，会话中断后可从产物恢复。
-- **`ss-troubleshooting-workflow`** —— 先运行分级自适应的 `ss-inspect`，要求调查层级、
-  证据预算、设计理解、影响面与修复验证方案均完整，且不存在未处理的升级信号，再在根因
-  确认关卡处暂停；确认后方才建分支，并沿同一编码-评审
-  路径完成修复。已确认的多仓修复范围会在建分支前移交，断点续跑也只复用与同一
-  Problem ID 关联的产物。
-- **`ss-multi-repo-workflow`** —— 面向跨仓库变更：按仓库拆分工作，从每个仓库的真实
-  工作根目录启动一个通过能力检查的 runner，按依赖关系分批调度，并验证每个仓库带证据
-  的结构化结果。runner 可以是原生 child 或 headless 进程；编排者自身不修改代码。
-
-### Git 交付
-
-- **`ss-create-branch`** —— 从需求推导出带类型前缀的分支名（`feat/`、`fix/` 等）并自
-  默认分支切出——可选地在隔离的 **git worktree** 中进行（显式指定 >
-  仓库约定 > 询问一次），使分支拥有独立目录：主 checkout 保持整洁、并行任务互不干扰、
-  中断的任务不会留下脏状态。优先使用代理原生的 worktree 工具，否则回退到项目内被
-  git 忽略的 `.worktrees/` 目录。
-- **`ss-create-pr`** —— 先执行质量关卡（测试、lint、遗留调试代码扫描），生成规范的
-  conventional commits，根据 remote 识别代码托管平台（GitHub 用 `gh`，GitLab 用
-  `glab`），并基于计划与 Spec 创建 PR 及其描述。无 remote 或缺少 CLI 时，降级为本地
-  提交加变更摘要——不视为失败。
-- **`ss-cleanup`** —— 合并之后：删除分支与 worktree、同步默认分支；无可清理内容时
-  直接退出（lite 模式）。
-
-## Skill 目录
-
-| 分类 | Skills |
+| 技能 | 用途 |
 | --- | --- |
-| Spec 管理 | `ss-write-spec`、`ss-archive`、`ss-list-changes`、`ss-show-spec`、`ss-trace-spec`、`ss-reverse-spec` |
-| 方案与计划 | `ss-proposal`、`ss-plan` |
-| 工作流 | `ss-feature-workflow`、`ss-coding-workflow`、`ss-troubleshooting-workflow`、`ss-multi-repo-workflow` |
-| 多代理 | `ss-coding`、`ss-code-review` |
-| Git 交付 | `ss-create-branch`、`ss-create-pr`、`ss-cleanup` |
-| 诊断 | `ss-inspect` |
-| 共享库 | `ss-guardrails`（安全/质量/防错清单）、`ss-references`（其他技能运行时读取的共享模板） |
+| [ss-feature-workflow](skills/ss-feature-workflow/SKILL.md) | 从需求到提案/规格关卡和交付 |
+| [ss-coding-workflow](skills/ss-coding-workflow/SKILL.md) | 从已批准计划到验证后的交付 |
+| [ss-troubleshooting-workflow](skills/ss-troubleshooting-workflow/SKILL.md) | 从根因确认到修复交付 |
+| [ss-multi-repo-workflow](skills/ss-multi-repo-workflow/SKILL.md) | 按依赖调度多个仓库 |
+| [ss-proposal](skills/ss-proposal/SKILL.md) | 架构、接口/界面契约和规格变更 |
+| [ss-plan](skills/ss-plan/SKILL.md) | 简短可复用的行为、接口和测试意图计划 |
+| [ss-inspect](skills/ss-inspect/SKILL.md) | 只输出报告的证据调查 |
+| [ss-coding](skills/ss-coding/SKILL.md) | 持续负责人测试开发、评审和最终验证 |
+| [ss-code-review](skills/ss-code-review/SKILL.md) | 新的只读因果影响评审 |
+| [ss-create-branch](skills/ss-create-branch/SKILL.md) | 安全准备获准工作目录 |
+| [ss-create-pr](skills/ss-create-pr/SKILL.md) | 仅发布已验证结果 |
+| [ss-cleanup](skills/ss-cleanup/SKILL.md) | 独立授权的精确路径清理 |
+| [ss-write-spec](skills/ss-write-spec/SKILL.md) | 编写严格的 OpenSpec 变更规格 |
+| [ss-archive](skills/ss-archive/SKILL.md) | 评审前合入权威规格 |
+| [ss-show-spec](skills/ss-show-spec/SKILL.md) | 读取能力规格 |
+| [ss-trace-spec](skills/ss-trace-spec/SKILL.md) | 追踪规格到源码 |
+| [ss-list-changes](skills/ss-list-changes/SKILL.md) | 查看活跃和已归档变更 |
+| [ss-reverse-spec](skills/ss-reverse-spec/SKILL.md) | 从实际源码建立基线规格 |
+| [ss-guardrails](skills/ss-guardrails/SKILL.md) | 安全、质量和语言检查参考 |
+| [ss-references](skills/ss-references/SKILL.md) | 公共政策和模板，不是独立工作流 |
 
-## 与同类项目的比较
+## 文档和验证
 
-这些项目目标一致——让 AI 编写的代码值得信任——但侧重层面有所不同。它们之间更多是
-互补而非竞争；下表旨在说明差异，不作优劣评判。
+- [工作流顺序和参数](docs/workflows.md)
+- [角色、等待和恢复](docs/multi-agent.md)
+- [工作目录与多仓库](docs/worktree-and-multi-repo.md)
+- [持续规格](docs/spec-driven.md) · [安全质量规则](docs/guardrails.md)
+- [架构](docs/architecture.md) · [仓库指南](AGENTS.md)
+- [安全](SECURITY.md) · [发布边界](RELEASING.md) · [更新记录](CHANGELOG.md)
 
-| 项目 | 主要侧重 | 与 SuperSpec 的差异 |
-| --- | --- | --- |
-| [superpowers](https://github.com/obra/superpowers) | 丰富的过程类 skill 库（头脑风暴、TDD、调试、子代理驱动开发），侧重于塑造工作纪律 | 关注实践层面的*如何工作*；SuperSpec 在此基础上增加了 Spec 生命周期管理、端到端交付工作流（需求 → PR）与按语言划分的护栏。superpowers 以 Claude Code 为主、辅以其他代理的适配层；SuperSpec 以单一 SKILL.md 覆盖四种运行时 |
-| [OpenSpec](https://github.com/Fission-AI/OpenSpec) | Spec 变更管理：一套用于提出、审批与归档 spec delta 的 CLI 与规范 | 管理*要构建什么*，实现交由代理自身；SuperSpec 采用其 Spec 规范（完全兼容），并补充执行侧的另一半——计划、多代理编码、评审与交付 |
-| [spec-kit](https://github.com/github/spec-kit) | 由 `specify` CLI 驱动的 Spec 驱动开发：constitution → specify → plan → tasks 模板，覆盖多种代理 | 工作流依靠 CLI 生成的模板与脚本推进；SuperSpec 将编排完全保留在由模型自行执行的提示词中，叠加多代理评审与护栏，并以跨越单个需求生命周期的 Spec 为核心 |
-
-如果你已在使用 OpenSpec，SuperSpec 可直接接入同一个 `openspec/` 目录；
-如果你在使用 superpowers，两套 skills 可在同一代理下共存——`ss-` 前缀保证了
-命名互不冲突。
-
-## 设计文档
-
-| 文档 | 内容 |
-| --- | --- |
-| [architecture.md](docs/architecture.md) | 设计理念、单源四运行时布局、skill 目录 |
-| [workflows.md](docs/workflows.md) | 工作流编排、确认关卡、full/lite 模式、断点续跑 |
-| [multi-agent.md](docs/multi-agent.md) | 多代理 TDD 与并行评审设计 |
-| [spec-driven.md](docs/spec-driven.md) | Spec 管理：delta → 归档 → 追溯 |
-| [worktree-and-multi-repo.md](docs/worktree-and-multi-repo.md) | 并行开发隔离与多仓库编排 |
-| [guardrails.md](docs/guardrails.md) | 护栏为何仅覆盖安全、质量与防错规则 |
-
-## 致谢
-
-SuperSpec 站在两个优秀开源项目的肩膀上：
-[superpowers](https://github.com/obra/superpowers) 开创了将工程纪律封装为
-agent skills 的先河；[OpenSpec](https://github.com/Fission-AI/OpenSpec)
-定义了本工具集所依赖的 spec-delta 规范。如果 SuperSpec 不适合你的场景，
-不妨了解一下它们。
-
-## 参与贡献
-
-欢迎提交 Issue 与 PR。仓库约定见 [AGENTS.md](AGENTS.md)。
-
-## 卸载
-
-- **Claude Code**
-
-  ```
-  /plugin uninstall super-spec@super-spec
-  /plugin marketplace remove super-spec
-  ```
-
-- **Codex** —— `codex plugin remove super-spec`，随后可选执行
-  `codex plugin marketplace remove super-spec`。
-- **Pi** —— `pi remove npm:@lbk-open/super-spec`。
-- **手动拷贝安装（Codex / Pi / OpenCode）** —— 删除安装时拷贝的内容即可
-  （项目级安装或 OpenCode 备选路径请相应调整）：
-
-  ```bash
-  rm -rf ~/.agents/skills/ss-*
-  ```
-
-SuperSpec 在 skills 目录之外不保存任何状态，也从不写入用户项目，
-因此无需其他清理。详见 [INSTALL.md](INSTALL.md#uninstalling)。
-
-## 许可证
-
-[Apache-2.0](LICENSE)
+仓库使用 `./scripts/validate.sh` 验证；Node 测试检查静态提示契约及削弱条款的失败，
+不证明真实助手或平台已经执行成功。工作流本身不需要 Node 辅助程序。原生安装、
+技能发现和宿主行为需要单独获准的真实验证；缺少工具必须如实披露，不能当作通过。

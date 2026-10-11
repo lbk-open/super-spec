@@ -5,6 +5,12 @@ description: Use when investigating any technical issue — a bug, alert, perfor
 
 # Root Cause Investigation
 
+Read [checkpoint policy](../ss-references/workflow-checkpoint.md) for external
+workflow output. The continuous owner investigates, then retains ownership for
+approved planning/coding; Main only coordinates. Preserve sanitized input, normalized
+flags, actual human/auto/pending gate context, workspace and original evidence.
+A report never authorizes repair or fabricates root-cause confirmation.
+
 Systematically investigate technical issues by gathering evidence from multiple independent sources, tracing the root cause through the full call chain, and designing a verified repair at the correct abstraction boundary. Never guess — follow the evidence.
 
 This skill is **report-only**. It never edits code or configuration, changes runtime state, creates a branch, applies a mitigation, or invokes a coding workflow. Execution belongs to a downstream workflow after the report is complete and its root cause is confirmed.

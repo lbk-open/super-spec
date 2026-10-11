@@ -1,11 +1,8 @@
 {
-  "name": "@lbk-open/super-spec",
+  "name": "super-spec",
   "version": "0.1.1",
   "description": "Spec-driven development toolkit for AI coding agents: end-to-end workflows, multi-agent coding and review, living specs, and engineering guardrails",
   "license": "Apache-2.0",
-  "repository": "github:lbk-open/super-spec",
-  "homepage": "https://github.com/lbk-open/super-spec#readme",
-  "bugs": "https://github.com/lbk-open/super-spec/issues",
   "keywords": [
     "pi-package",
     "agent-skills",

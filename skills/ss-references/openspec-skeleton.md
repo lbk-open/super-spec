@@ -81,11 +81,11 @@ list capabilities or search by keyword, then read only the one file you need.
 
 | Goal | Skill |
 |------|-------|
-| Plan a new requirement; generate a delta plus an execution plan | `ss-plan` (its Phase 0 reads specs and active changes, then runs the same logic as `ss-write-spec`) |
+| Prepare and plan a new requirement | `ss-write-spec` prepares applicable deltas with the proposal before the workflow gate; `ss-plan` reuses approved artifacts for the execution map |
 | Look up a capability's current contract, or search capabilities | `ss-show-spec [<capability> \| <keyword>]` — no argument lists everything |
 | List active changes and recent archive entries | `ss-list-changes` |
 | Trace a Requirement's history | `ss-trace-spec` |
-| Merge a delta into the source of truth | `ss-archive` (usually called automatically by `ss-create-pr`) |
+| Merge a delta into the source of truth | `ss-archive` during authorized workflow preparation before independent review and final candidate verification, never during publication; standalone use needs mutation permission |
 | Run a requirement end to end | `ss-feature-workflow` |
 
 ## Hard Rule: Read Before You Change Behavior

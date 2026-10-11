@@ -45,7 +45,7 @@
 - **Out of scope**: what belongs to other repositories, marked as an external dependency
 - **Integration points**: APIs to call/expose, cross-app navigation, shared components
 
-**Repositories Involved:** <every repository that needs a code commit; for a single-repo change, list the current repo name. Exclude the shared API-contract repo and the specs submodule. Downstream workflows use this field for multi-repo routing.>
+**Repositories Involved:** <every repository that needs a code commit; for a single-repo change, list the current repo name. Exclude read-only contract/spec references; actual changes need explicit repo ownership. Downstream workflows use this field for multi-repo routing.>
 
 ### 2.2 Success Criteria
 
@@ -312,3 +312,15 @@ For each significant change point:
 | 2 | xxx | xxx | xxx | xxx |
 
 ---
+
+## Delivery Contract References
+
+- Stable change-id, approved scope and source identity.
+- Applicable delta paths and strict validation evidence before the proposal gate,
+  or documented no-delta unchanged-promise rationale.
+- External staged validation mirror when prebranch project mutation is disallowed.
+- Interfaces, invariants, dependency/owner boundaries and test intent sufficient
+  for a short reusable plan; no full implementation bodies or duplicated delta.
+
+See [delta timing](openspec-delta.md). Gate completion is recorded in the external
+checkpoint as actual human / auto / pending, not manufactured approval.
