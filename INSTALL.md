@@ -1,195 +1,80 @@
-# Installing SuperSpec
+# Installing SuperSpec Locally
 
-> **This document is written for an AI coding agent to execute.**
->
-> **Human?** Paste this into your agent session (Claude Code, Codex, Pi, OpenCode, or
-> any agent with shell access) and let it do the rest:
->
-> ```
-> Install SuperSpec by following the instructions here:
-> https://raw.githubusercontent.com/lbk-open/super-spec/main/INSTALL.md
-> ```
+Use an existing local checkout containing this document. No public registry,
+package download or repository URL is assumed. Installation changes agent discovery
+configuration and requires explicit user consent; workflows never install globally
+as a repair step. [README.md](README.md) lists the skills.
 
----
+## Choose agents and scope
 
-## Agent instructions
+Ask which agents and whether the user wants project or global scope. Do not pick
+or persist a preference on their behalf. Confirm each available CLI without dumping
+environment/configuration. Use an absolute SOURCE pointing to this checkout and
+an explicit TARGET for manual installation.
 
-You are installing **SuperSpec**, a set of Agent Skills (`SKILL.md` directories with an
-`ss-` prefix) from `https://github.com/lbk-open/super-spec`. Follow the steps in order.
-Verify each step before moving on. If a step fails, stop and report the exact error —
-do not improvise alternative install locations.
+## Claude Code local plugin
 
-### Step 1 — Ask which platforms to install for
-
-Ask the user (skip if they already said):
-
-1. **Which agents?** Claude Code / OpenAI Codex / Pi / OpenCode — one or several.
-2. **Scope?** Global (available in every project — the default) or project-scoped
-   (this repository only).
-
-Detect what's available to inform the question, but don't decide for the user:
+When the installed CLI supports local marketplaces, from this checkout:
 
 ```bash
-for c in claude codex pi opencode; do command -v "$c" >/dev/null && echo "$c: installed"; done
-```
-
-### Step 2 — Claude Code (if selected)
-
-Claude Code installs SuperSpec as a plugin; no file copying needed.
-
-```bash
-claude plugin marketplace add lbk-open/super-spec
+claude plugin marketplace add ./
 claude plugin install super-spec@super-spec
+claude plugin list
 ```
 
-**Verify:**
+Check the real result and enabled plugin; do not fabricate discovery. Missing or
+unsupported CLI is a limitation, not authorization for another protocol. Local
+plugin manifests are in [.claude-plugin](.claude-plugin/plugin.json).
+
+## Codex, Pi and OpenCode manual bundle
+
+These agents support skill discovery using a project `.agents/skills/` or global
+`~/.agents/skills/` directory. Verify the installed agent's actual discovery rules;
+Pi also supports `.pi/skills/` and `~/.pi/agent/skills/`. No registry package is
+claimed. Codex's local plugin manifest is [.codex-plugin/plugin.json](.codex-plugin/plugin.json)
+and its local marketplace is [.agents/plugins/marketplace.json](.agents/plugins/marketplace.json).
+Pi's local package discovery declaration is in [package.json](package.json).
+
+Before copying, canonicalize SOURCE and TARGET, reject symlink escapes, and check
+each destination ss-* directory for collision. Existing skills are user content:
+ask before replacing, and protect a recoverable nonsecret backup externally.
+Never blindly overwrite a directory or delete all skills matching a glob.
+
+After those checks and explicit consent, copy this checkout's entire bundle:
 
 ```bash
-claude plugin list | grep -A3 super-spec
-```
-
-Expected: `super-spec@super-spec` with `Status: ✔ enabled`. Skills appear as `/ss-*`
-commands in the user's next Claude Code session.
-
-If the `claude` CLI is not on PATH, tell the user to run `/plugin marketplace add
-lbk-open/super-spec` and `/plugin install super-spec@super-spec` inside a Claude Code
-session instead.
-
-### Step 3 — Codex, Pi, and/or OpenCode (if selected)
-
-Each of the three has a native package channel that supports updates later — prefer it,
-and use the manual copy below only if the native route fails or the user asks for it.
-
-**OpenAI Codex — plugin marketplace:**
-
-```bash
-codex plugin marketplace add https://github.com/lbk-open/super-spec
-codex plugin add super-spec@super-spec
-```
-
-Verify with `codex plugin list`. Updates later: `codex plugin marketplace upgrade
-super-spec` (then confirm in the `/plugins` panel inside a Codex session — the upgrade
-refreshes the marketplace snapshot; the panel shows whether the installed plugin picked
-it up).
-
-**Pi — npm package (install without a version pin so updates work):**
-
-```bash
-pi install npm:@lbk-open/super-spec
-```
-
-The npm package is scoped; the plugin is named `super-spec` on every other channel.
-Installing straight from git also works if the user prefers it:
-`pi install git:github.com/lbk-open/super-spec`.
-
-Verify with `pi list`. Updates later: `pi update --all`.
-
-**OpenCode — the `skills` CLI (community de-facto standard):**
-
-```bash
-npx skills add lbk-open/super-spec -a opencode
-```
-
-Updates later: `npx skills update`. (The same CLI can also target Codex and Claude Code
-with additional `-a` flags, if the user prefers managing everything through it.)
-
-**Manual copy (for any of the three).** All three discover skills from the same
-directory. Choose the target by scope:
-
-- **Global:** `~/.agents/skills/`
-- **Project-scoped:** `<project-root>/.agents/skills/`
-
-Copy the skills (a shallow clone into a temp dir keeps things clean):
-
-```bash
-TARGET="$HOME/.agents/skills"          # or "<project-root>/.agents/skills" for project scope
-TMP="$(mktemp -d)"
-git clone --depth 1 https://github.com/lbk-open/super-spec.git "$TMP/super-spec"
+# Set both variables to verified absolute paths; do not run with empty values.
+test -n "$SOURCE" && test -n "$TARGET"
+test -d "$SOURCE/skills"
 mkdir -p "$TARGET"
-cp -R "$TMP/super-spec/skills/"* "$TARGET/"
-rm -rf "$TMP"
+cp -R "$SOURCE/skills/"ss-* "$TARGET/"
+ls "$TARGET" | grep -c '^ss-'  # expected: 20
+ test -f "$TARGET/ss-guardrails/core.md" &&  test -f "$TARGET/ss-references/workflow-common.md" &&  test -f "$TARGET/ss-references/workflow-checkpoint.md" && echo 'layout OK'
 ```
 
-**Install all of them, and do not rename or flatten the copied directories.** Skills
-reference each other by sibling relative paths (`../ss-guardrails/core.md`,
-`../ss-references/<file>.md`), so every `ss-*` directory must stay side by side in the
-same parent. `ss-guardrails` and `ss-references` are shared libraries rather than
-workflows — nobody invokes them directly, but the other skills stop working without
-them.
+Install every ss-* directory, including ss-references and ss-guardrails, side by
+side with unchanged names. A single copied skill has dangling sibling references.
+Verify the exact copied bundle paths and real agent discovery (restart only if
+needed). CLI discovery checks are optional and platform-dependent, not static proof.
+If the agent offers a supported local plugin/package route, check its local help
+and obtain consent before using it; do not guess package syntax or a published URL.
 
-**Verify:**
+## Upgrade and uninstall
 
-```bash
-ls "$TARGET" | grep -c '^ss-'     # expected: 20
-test -f "$TARGET/ss-guardrails/core.md" && test -f "$TARGET/ss-references/proposal-template.md" && echo "layout OK"
-```
+Upgrades use the same local checkout and collision/backup checks. A native local
+plugin update is allowed only through the installed CLI's documented controls.
+Report actual installed version/path, changes and results; never install another
+agent or change project instructions to make discovery succeed.
 
-If OpenCode is among the targets, you can additionally confirm discovery
-(run from any git repository):
+Uninstall only the exact installed bundle/plugin paths explicitly authorized by
+the user after inspecting ownership and pending work; use supported native removal
+for plugin-managed files. Never remove all `.agents` files, project worktrees,
+other skills, or task evidence. External checkpoint cleanup is a separate action.
 
-```bash
-opencode debug skill 2>/dev/null | grep -o '"name": *"ss-[a-z-]*"' | sort -u | wc -l   # expected: 20
-```
+## State and requirements
 
-Notes per platform — nothing extra to do, just context:
-
-- **Codex** reads `<repo>/.agents/skills` (project) and `~/.agents/skills` (global).
-- **Pi** reads `.agents/skills`, `.pi/skills` (project) and `~/.agents/skills`,
-  `~/.pi/agent/skills` (global).
-- **OpenCode** reads `.agents/skills`, `.opencode/skills`, `.claude/skills` (project)
-  and the `~/` equivalents plus `~/.config/opencode/skills` (global). If the user
-  prefers one of those alternates, copy to it instead — same layout rules apply.
-
-### Step 4 — Check for name collisions
-
-Before finishing, confirm no pre-existing skill shadows the `ss-` prefix:
-
-```bash
-ls "$TARGET" 2>/dev/null | sort | uniq -d
-```
-
-Any duplicate means the user already had a conflicting copy — ask whether to
-overwrite (re-copy) or keep the existing one. The `ss-` prefix is chosen to avoid
-collisions with other skill packs (e.g., superpowers), so duplicates normally only
-appear on re-install, which is safe to overwrite.
-
-### Step 5 — Report
-
-Tell the user, concretely:
-
-- which platforms were installed, at which scope and path;
-- the verification results (plugin enabled / `ss-*` count);
-- how to start: *"Ask your agent to `use ss-feature-workflow to implement <requirement>`,
-  or invoke any `/ss-*` skill directly — see the
-  [skill catalog](https://github.com/lbk-open/super-spec#skill-catalog)."*
-- that a restart of the agent session may be needed before skills are visible.
-
-## Upgrading
-
-- **Claude Code:** `claude plugin update super-spec@super-spec` (or `/plugin` →
-  manage plugins inside a session).
-- **Codex (plugin route):** `codex plugin marketplace upgrade super-spec`, then confirm
-  in the `/plugins` panel.
-- **Pi:** `pi update --all` (works because the install wasn't pinned to a version).
-- **OpenCode (`skills` CLI):** `npx skills update`.
-- **Manual copies:** re-run the copy from Step 3 — it's idempotent and overwrites
-  in place.
-
-## Uninstalling
-
-- **Claude Code:** `claude plugin uninstall super-spec@super-spec`, then optionally
-  `claude plugin marketplace remove super-spec`.
-- **Codex (plugin route):** `codex plugin remove super-spec`, then optionally
-  `codex plugin marketplace remove super-spec`.
-- **Pi:** `pi remove npm:@lbk-open/super-spec`.
-- **OpenCode (`skills` CLI):** `npx skills remove <skill-name>` per skill, or delete the
-  copies it created.
-- **Manual copies:** remove exactly what Step 3 copied:
-
-  ```bash
-  rm -rf "$TARGET"/ss-*
-  ```
-
-  Nothing else is written anywhere — SuperSpec keeps no state outside the skills
-  directory and never writes into user projects (see
-  [docs/guardrails.md](docs/guardrails.md)).
+Workflow execution is prompt-first and does not need Node helpers. Repository
+validation uses Node for static prompt-contract tests. The host keeps one protected
+external checkpoint and original result/log references (optional explicit external
+state fallback), never toolkit state in a user's repository. See
+[workflow-checkpoint.md](skills/ss-references/workflow-checkpoint.md).

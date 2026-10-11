@@ -5,16 +5,18 @@ description: Generates or updates OpenSpec delta specs under openspec/changes/<c
 
 # Write OpenSpec Delta
 
-Generate OpenSpec-compatible delta specs under `openspec/changes/<change-id>/`. This is a
-plumbing skill: day-to-day development normally goes through the `ss-plan` skill,
-whose Phase 0 runs this same logic automatically.
+Generate OpenSpec-compatible delta specs under `openspec/changes/<change-id>/`. Read [delta timing](../ss-references/openspec-delta.md). Feature/semantic
+change workflows prepare and validate this delta with the proposal BEFORE the gate,
+using a protected external staged validation mirror when prebranch mutation is
+not allowed. Keep one stable change-id and materialize identical approved bytes
+after the gate. Planning references this delta and never regenerates it.
 
 ## When To Use
 
 - You need to align capability specs with reviewers before writing a full execution plan.
 - You need to adjust delta specs without regenerating the plan.
-- The `ss-coding` or `ss-create-pr` skill reported missing or invalid delta
-  specs.
+- Pre-review preparation reported missing or invalid delta specs; return to
+  the affected gate if semantics or current approved bytes changed.
 
 ## Inputs
 
@@ -35,7 +37,7 @@ file paths always stay in English.
 ## Step 0: Ensure the OpenSpec Skeleton Exists
 
 Check whether `openspec/specs/` and `openspec/changes/` already exist. If this repository
-has no OpenSpec structure yet, create it first by following
+has no OpenSpec structure yet and bootstrap mutation is authorized, create it by following
 `../ss-references/openspec-skeleton.md`, then continue with Step 1 below.
 
 ## Process
@@ -52,7 +54,8 @@ Read:
 
 ### Step 2: Derive Change ID
 
-Use an explicit `--change-id` if provided. Otherwise derive a kebab-case id from, in order:
+Preserve the already approved stable change-id. Use an explicit `--change-id`
+only when establishing a new change, consuming its value before parsing flags. Otherwise derive a kebab-case id from, in order:
 
 1. the current branch name, stripped of its type prefix, or
 2. the proposal title, or
@@ -133,3 +136,9 @@ Report:
 
 Suggest the next step: run the `ss-plan` skill with the same input to generate the
 execution plan.
+
+Workflow output honors the supplied external checkpoint/path and preserves flags,
+gates, scope and workspace. No-delta restoration requires documented unchanged
+promise/spec and evidence; new semantics need a scope decision. Validate using the
+project's available strict OpenSpec command, retaining actual output or explicit
+unavailability. A structural checklist alone is not native validation proof.

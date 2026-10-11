@@ -7,7 +7,7 @@ description: Use when you have a PRD or requirement description and need a compl
 
 Generate a comprehensive technical proposal from a PRD or requirement description, for any repository shape — a backend service, a frontend app (Web, iOS, Android, Flutter), or a full-stack repository.
 
-**Scope note:** a proposal is a high-level design document. It answers *what* the change is, *why* it's the right approach, and *what contracts* it introduces or touches — architecture, data flow, key interfaces, alternatives and trade-offs, risks and rollback, milestones. It does not contain implementation detail: no file-by-file edit lists, no full method bodies, no step-by-step coding instructions. That level of detail is the `ss-plan` skill's job, which consumes this proposal as its input.
+**Scope note:** a proposal is a high-level design document. It answers *what* the change is, *why* it's the right approach, and *what contracts* it introduces or touches — architecture, data flow, key interfaces, alternatives and trade-offs, risks and rollback, milestones. It does not contain implementation detail: no file-by-file edit lists, no full method bodies, no step-by-step coding instructions. The `ss-plan` skill maps approved contracts to source boundaries and test intent; the continuous owner writes the implementation.
 
 **When not to use:**
 - Small bug fixes or config-only changes with no architecture decisions.
@@ -19,6 +19,15 @@ Generate a comprehensive technical proposal from a PRD or requirement descriptio
 ## Inputs
 
 - A link to a requirement document that your document-reading tool can fetch, or a plain-text requirement description. If neither is available, ask the user for one.
+- **Output target** — standalone uses an explicitly authorized `docs/proposals/` path;
+  prebranch workflows supply a protected external artifact path and the single
+  checkpoint, stable taskId/repoId and source identity.
+
+Read [workflow policy](../ss-references/workflow-common.md),
+[checkpoint](../ss-references/workflow-checkpoint.md), and
+[delta timing](../ss-references/openspec-delta.md). Reject unsafe artifact paths;
+never fall back to writing on a protected/default branch. Preserve invocation
+flags, human/auto/pending gates, authorized scope and workspace through handoff.
 
 If the input is a document link, read its content with whatever document-reading tool is available in your environment. Otherwise treat the input as a plain-text requirement description directly.
 
@@ -48,7 +57,7 @@ The following are proposal failures — never allowed:
 | "Refer to module X" or "similar to page Y" without specifics | Show the concrete contract, code path, or interaction detail |
 | Introducing unnecessary complexity (new framework/middleware/library/abstraction) | Use the simplest approach with the existing tech stack; recommend a simpler path when available |
 | "While we're at it" refactoring of unrelated modules or pages | Only changes within the requirement's scope |
-| Writing out full implementations, method bodies, or a file-by-file edit list | Stay at the contract/interface level; full implementation belongs to `ss-plan` and the coding phase |
+| Writing out full implementations, method bodies, or a file-by-file edit list | Stay at the contract/interface level; implementation belongs to the continuous coding owner |
 | Only covering the happy path for UI-facing work | List every affected page/screen state: Normal / Loading / Empty / Error / Edge Case |
 
 ## Process
@@ -63,7 +72,7 @@ After reading the PRD, identify what's relevant to **this repository**:
    - What this repository WILL implement (in-scope functionality, pages, or endpoints)
    - What belongs to other repositories (out-of-scope, marked as an external dependency)
    - Integration points with other repositories (APIs to call/expose, cross-app navigation, shared components)
-4. **Record the repository list.** The proposal MUST carry a structured field, **`Repositories Involved:`**, in its summary-design section — every repository whose code must change for this requirement (write the current repo's name if it's single-repo). Do not count a shared API-contract repo or spec submodules. Downstream workflows read this field for multi-repo routing — see `../ss-references/multi-repo-detection.md`.
+4. **Record the repository list.** The proposal MUST carry a structured field, **`Repositories Involved:`**, in its summary-design section — every repository whose code must change for this requirement (write the current repo's name if it's single-repo). Do not count read-only API/spec references; explicit code changes to another repository still require confirmed ownership. Downstream workflows read this field for multi-repo routing — see `../ss-references/multi-repo-detection.md`.
 
 If the in-scope work involves **3+ independent subsystems**, **5+ independent pages/screens**, or **spans 2+ sub-apps/micro-frontend modules**:
 - Suggest splitting into multiple independent proposals.
@@ -127,7 +136,7 @@ After writing, run this checklist:
 - Replace all with concrete content.
 
 **4. Implementation-depth check**
-- Scan for full method bodies, complete file listings, or step-by-step coding instructions that have crept past the contract level — trim them back to interface/contract descriptions and defer the rest to `ss-plan`.
+- Scan for full method bodies, complete file listings, or step-by-step coding instructions that have crept past the contract level — trim them back to interface/contract descriptions and defer implementation to the continuous coding owner.
 
 **5. Template completeness**
 - Every applicable section has substantive content.
@@ -141,43 +150,39 @@ After writing, run this checklist:
 - Store/state field names match their usage in the detailed design.
 
 **7. PlantUML/Mermaid validation**
-- For each PlantUML diagram, render it via a PlantUML server — the public instance at `https://www.plantuml.com/plantuml`, or a local/self-hosted renderer if the project configures one — by encoding the source and requesting `/png/{encoded}` or `/svg/{encoded}`.
-- Verify the rendered image has no syntax-error text.
-- If your environment doesn't support image inspection, skip this step.
+- Prefer a local or project-configured self-hosted PlantUML renderer. Proposal diagrams may contain confidential architecture; never send source to a public renderer without explicit user consent after stating that the encoded diagram leaves the machine.
+- With consent, the public instance may be used; otherwise perform local structural validation (`@startuml`/`@enduml`, diagram keywords) when no trusted renderer is available.
+- Verify any rendered output has no syntax-error text.
 
 Fix any issues found immediately, then continue.
 
-### Step 5: Independent Review (if subagents are available)
+### Step 5: Independent Proposal Review
 
-If your tool supports spawning a subagent with fresh context:
+Use a fresh read-only proposal reviewer with the actual parent model when supported,
+reading the exact proposal and `../ss-references/proposal-writing.md` checklist.
+Fix accepted issues with the same owner. If unavailable, explicitly disclose the
+missing independent pass; never claim it ran or skip a workflow-required review.
+A standalone self-reviewed draft is not evidence of independent approval.
 
-- Spawn an independent review agent with:
-  - Input: the generated proposal Markdown file.
-  - Reference: `../ss-references/proposal-writing.md` (quality-standards checklist).
-  - Task: review the proposal against every checklist item and report issues.
-- The review agent must not have seen the generation process — fresh context is what makes the review independent.
-- Fix any issues the reviewer finds before proceeding to output.
+### Step 6: Delta, Validation and Output
 
-If subagents aren't available, skip this step — the Step 4 self-review is sufficient.
+Feature delivery requires proposal plus applicable delta complete and validated
+before its human or explicit auto gate. Call ss-write-spec with the same stable
+change-id; do not postpone the delta to planning. Prebranch mode uses the external
+staged validation mirror from openspec-delta.md, never a temporary project state
+folder. Record exact paths/current bytes, commands/exits, limitations and review
+in the one checkpoint. A no-delta rationale must identify an unchanged existing
+promise; changed semantics require a delta and scope decision.
 
-### Step 6: Output
-
-Write the proposal as a Markdown file to the `docs/proposals/` directory in the repository:
-
-- File name format: `YYYY-MM-DD-<feature-name>.md`
-- Example: `docs/proposals/2026-05-09-order-refund-flow.md`
-- Create the `docs/proposals/` directory if it doesn't exist.
+Write only to the supplied authorized output. Standalone proposal naming may use
+`docs/proposals/YYYY-MM-DD-<feature>.md`. Publish external artifacts atomically
+with restrictive permissions. Materialize approved artifacts later only by copying
+identical bytes and checking the current gate binding; drift blocks continuation.
 
 ### Step 7: Execution Handoff
 
-After output, present next-step options to the user:
-
-```
-Proposal generated and saved to docs/proposals/. Suggested next steps:
-
-1. ss-plan on docs/proposals/<file>.md — break the proposal into an executable task plan; Phase 0 automatically generates OpenSpec delta specs
-2. ss-coding — start multi-agent parallel coding (for smaller requirements)
-3. Manual review — have the team review the proposal first
-
-Which do you prefer?
-```
+Return bounded proposal/delta paths, identity/byte binding, validation/review
+result, unresolved decisions and checkpoint context. Planning reuses sufficient
+proposal decomposition; it does not generate a second delta or exact implementation.
+Do not offer coding as a way around the proposal gate. Standalone users can review
+these artifacts, then use ss-plan or the full feature workflow within their authority.
