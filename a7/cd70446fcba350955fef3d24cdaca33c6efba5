@@ -1,0 +1,16 @@
+scripts/release-text.mjs
+  h_6be99a8ac68ab0 63-67,71-72,80,92,95-96,98
+scripts/tests/release-text.test.mjs
+  h_6be99a8ac68ab0 75-152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7cd70446fcba350955fef3d24cdaca33c6efba5",
+  "prompts": {},
+  "humans": {
+    "h_6be99a8ac68ab0": {
+      "author": "LIYUE <liyue2008@gmail.com>"
+    }
+  }
+}
