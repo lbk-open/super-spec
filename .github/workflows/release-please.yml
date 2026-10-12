@@ -12,7 +12,34 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+          persist-credentials: false
+      - name: Check temporary tool paths
+        shell: bash
+        run: |
+          test ! -e "$GITHUB_WORKSPACE/.release-tool" && test ! -L "$GITHUB_WORKSPACE/.release-tool"
+          test ! -e "$RUNNER_TEMP/release-tool" && test ! -L "$RUNNER_TEMP/release-tool"
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          repository: googleapis/release-please-action
+          ref: 5c625bfb5d1ff62eadeeb3772007f7f66fdcf071 # v4
+          path: .release-tool
+          persist-credentials: false
+      - name: Prepare locked release tool
+        shell: bash
+        run: |
+          umask 077
+          test "$(git -C .release-tool rev-parse HEAD)" = 5c625bfb5d1ff62eadeeb3772007f7f66fdcf071
+          test ! -e "$RUNNER_TEMP/release-tool" && test ! -L "$RUNNER_TEMP/release-tool"
+          mv .release-tool "$RUNNER_TEMP/release-tool"
+          cd "$RUNNER_TEMP/release-tool"
+          if ! npm ci --ignore-scripts --omit=dev >/dev/null 2>&1; then
+            echo 'Release tool preparation failed.' >&2
+            exit 1
+          fi
+      - name: Validate release text before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TOOL_PATH: ${{ runner.temp }}/release-tool
+        run: node scripts/release-automation.mjs
