@@ -60,9 +60,16 @@ function destination(url, context, label) {
   fail();
 }
 
+function unwrapDestination(raw) {
+  if (raw.startsWith('<') !== raw.endsWith('>')) fail();
+  return raw.startsWith('<') ? raw.slice(1, -1) : raw;
+}
+
 export function sanitizeReleaseText(value, repository) {
   const context = repositoryContext(repository);
   let result = text(value);
+  // Check URL delimiters before any link removal or bare-URL substitution.
+  for (const match of result.matchAll(/<?https:\/\/[^\s<>()[\]]*>?/g)) unwrapDestination(match[0]);
   for (const match of result.matchAll(/\[[^\]\n]+\]\(/g)) {
     if (!/^\[[^\]\n]+\]\((<?https:\/\/[^\s()<>]+>?)\)/.test(result.slice(match.index))) fail();
   }
@@ -70,7 +77,7 @@ export function sanitizeReleaseText(value, repository) {
   result = result.replace(/^ {0,3}\[([^\]\n]+)\]:[ \t]*(<?https:\/\/[^\s<>]+>?)[ \t]*$/gm, (_, id, raw) => {
     const key = id.toLowerCase();
     if (references.has(key)) fail();
-    const url = raw.startsWith('<') ? raw.slice(1, -1) : raw;
+    const url = unwrapDestination(raw);
     destination(url, context);
     references.set(key, url);
     return '';
@@ -82,12 +89,13 @@ export function sanitizeReleaseText(value, repository) {
     return plain ?? `[${label}](${url})`;
   });
   result = result.replace(/\[([^\]\n]+)\]\((<?https:\/\/[^\s()<>]+>?)\)/g, (_, label, raw) => {
-    const url = raw.startsWith('<') ? raw.slice(1, -1) : raw;
+    const url = unwrapDestination(raw);
     return destination(url, context, label) ?? `[${label}](${url})`;
   });
-  result = result.replace(/\[([^\]\n]+)\](?!\()/g, (whole, label) => {
+  result = result.replace(/(`+)[^\n]*?\1(?!`)|\[([^\]\n]+)\](?!\()/g, (whole, code, label) => {
+    if (code) return whole;
     const url = references.get(label.toLowerCase());
-    if (!url) fail();
+    if (!url) return whole;
     return destination(url, context, label) ?? `[${label}](${url})`;
   });
   result = result.replace(/<https:\/\/[^\s<>]+>/g, whole => destination(whole.slice(1, -1), context) ?? whole);

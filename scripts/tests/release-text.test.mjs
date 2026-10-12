@@ -72,6 +72,84 @@ test('release text handles issue, compare, commit, PR and contextual references'
   for (const [input, expected] of inputs) assert.equal(sanitizeReleaseText(input, context), expected);
 });
 
+test('ordinary bracket prose and inline code preserve undefined shortcuts', () => {
+  for (const input of ['Support `items[0]` access.', 'Support items[0] access.', 'Accept [--flag] and [optional] arguments.', '`[documentation]` and ``[documentation]``']) {
+    assert.equal(sanitizeReleaseText(input, context), input);
+    assert.equal(sanitizeReleaseText(sanitizeReleaseText(input, context), context), input);
+  }
+  const documentation = 'https://docs.github.com/en/actions';
+  const input = `\`[documentation]\` and [documentation]\n[documentation]: ${documentation}\n`;
+  assert.equal(sanitizeReleaseText(input, context), `\`[documentation]\` and [documentation](${documentation})\n\n`);
+  for (const unsafe of ['[missing][undefined]', '[missing][]', `[example-owner]`, '[documentation](https://invalid.example/docs)']) {
+    assert.throws(() => sanitizeReleaseText(unsafe, context), {message: POLICY_ERROR});
+  }
+});
+
+test('ordinary bracket prose passes PR, full changeset and current Release boundaries', async () => {
+  const safeNotes = clean.replace('Preserve useful features', 'Support `items[0]`, [--flag], and [optional] arguments');
+  const api = client(); guardReleaseWrites(api, context);
+  const pr = {title, body: safeNotes, headBranchName: 'release-branch'};
+  await api.createPullRequest(pr, 'main', title, updates(safeNotes));
+  const created = api.calls.at(-1);
+  assert.equal(created.pr.body, safeNotes);
+  assert.equal(created.changes.get('CHANGELOG.md').content, safeNotes);
+  await api.updatePullRequest(1, {...pr, headRefName: 'release-branch', updates: updates(safeNotes)}, 'main', {});
+  assert.equal(api.calls.at(-1).body, safeNotes);
+  const changes = await api.buildChangeSet(updates(safeNotes), 'main');
+  assert.equal(changes.get('CHANGELOG.md').content, safeNotes);
+  await api.createRelease({...release, notes: safeNotes}, {forceTag: true});
+  assert.equal(api.calls.at(-1).release.notes, safeNotes);
+  assert.equal(sanitizeReleaseText(safeNotes, context), safeNotes);
+});
+
+test('bare and paired destinations preserve valid inline, reference and autolink forms', () => {
+  const documentation = 'https://docs.github.com/en/actions';
+  for (const [input, expected] of [
+    [`[#7](${root}/pull/7)`, '#7'], [`[#7](<${root}/pull/7>)`, '#7'],
+    [`[documentation](<${documentation}>)`, `[documentation](${documentation})`],
+    [`[#7][change]\n[change]: <${root}/pull/7>\n`, '#7\n\n'],
+    [`[documentation][docs]\n[docs]: <${documentation}>\n`, `[documentation](${documentation})\n\n`],
+    [`<${root}/pull/7>`, '#7'], [`<${documentation}>`, `<${documentation}>`],
+    [documentation, documentation],
+  ]) {
+    assert.equal(sanitizeReleaseText(input, context), expected);
+    assert.equal(sanitizeReleaseText(expected, context), expected);
+  }
+});
+
+const malformedAngles = [
+  '[documentation](<https://docs.github.com/en/actions)',
+  `[#7](<${root}/pull/77)`, `<${root}/pull/7`,
+  '<https://docs.github.com/en/actions',
+  '[documentation][docs]\n[docs]: <https://docs.github.com/en/actions\n',
+  `[#7][change]\n[change]: <${root}/pull/7\n`,
+  '[documentation](https://docs.github.com/en/actions>)',
+  `[#7][change]\n[change]: ${root}/pull/7>\n`,
+];
+
+test('unpaired URL angle brackets fail before truncation or substitution', () => {
+  for (const input of malformedAngles) {
+    assert.throws(() => sanitizeReleaseText(input, context), {message: POLICY_ERROR});
+  }
+});
+
+test('malformed angle links cause constant errors and zero public writes at every boundary', async () => {
+  for (const malformed of malformedAngles) {
+    for (const boundary of ['create', 'update', 'changes', 'release', 'create-content', 'update-content']) {
+      const api = client(); guardReleaseWrites(api, context);
+      const badNotes = clean + '\n' + malformed;
+      const pr = {title, body: boundary.endsWith('content') ? clean : badNotes, headBranchName: 'release-branch', headRefName: 'release-branch', updates: updates(badNotes)};
+      let operation;
+      if (boundary === 'create' || boundary === 'create-content') operation = api.createPullRequest(pr, 'main', title, updates(boundary === 'create' ? clean : badNotes));
+      else if (boundary === 'update' || boundary === 'update-content') operation = api.updatePullRequest(1, pr, 'main', {});
+      else if (boundary === 'changes') operation = api.buildChangeSet(updates(badNotes), 'main');
+      else operation = api.createRelease({...release, notes: badNotes}, {forceTag: true});
+      await assert.rejects(operation, {message: POLICY_ERROR});
+      assert.ok(api.calls.every(call => call === 'build'), `${boundary} must not publish`);
+    }
+  }
+});
+
 test('release policy rejects unknown and malformed input without echo', () => {
   const inputs = [null, 7, '', 'x'.repeat(65537),
     `[${context}](${root}/pull/7)`, `${root}/blob/main/README.md`,
