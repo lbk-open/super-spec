@@ -6,11 +6,14 @@ Portable Agent Skills for feature delivery, coding, root-cause investigation,
 independent review and OpenSpec-compatible living specs. One prompt bundle works
 with Claude Code, Codex, Pi and OpenCode; no workflow runtime engine to install.
 
-## Start locally
+## Install from npm/Pi or a checkout
 
-Use this checkout and [INSTALL.md](INSTALL.md). No published registry package or
-public repository destination is assumed. Ask your agent to install only with
-explicit platform/scope consent, then request:
+The established npm/Pi distribution is `@lbk-open/super-spec`; the source checkout
+keeps the local package name `super-spec`. See [INSTALL.md](INSTALL.md) for Pi
+package installation, local plugins and manual copies, with explicit platform/scope
+consent. The [Pi gallery entry](https://pi.dev/packages/@lbk-open/super-spec) and
+previous npm release 0.1.1 establish the channel, not availability of 0.2.0: check
+the registry's actual version before installing a particular release. Then request:
 
 - Use ss-feature-workflow to implement this requirement.
 - Use ss-coding-workflow in lite mode on this approved plan.
@@ -82,10 +85,15 @@ native cwd/delegation/terminal-result capabilities and explicit dependencies.
 - [Roles, waiting and recovery](docs/multi-agent.md)
 - [Workspaces and multiple repositories](docs/worktree-and-multi-repo.md)
 - [Living specs](docs/spec-driven.md) · [Guardrails](docs/guardrails.md)
-- [Architecture](docs/architecture.md) · [Repository guide](AGENTS.md)
-- [Security](SECURITY.md) · [Release boundaries](RELEASING.md) · [Changelog](CHANGELOG.md)
+- [Architecture](docs/architecture.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
+- Checkout only: `AGENTS.md` (repository guide), `RELEASING.md` (release boundaries)
 
-Repository validation uses `./scripts/validate.sh`; Node runs static prompt-contract
-and weakening tests, not a live agent/native execution proof. Workflow execution
+The npm bundle includes skills, documentation, local plugin manifests and the Codex
+icon, not Git history, repository instructions, tests or release tooling. Use a full
+repository checkout for development and release work; the existing GitHub v0.2.0 tag
+is not the repaired npm candidate's source identity (see checkout `RELEASING.md`).
+
+Repository validation uses `./scripts/validate.sh` in that checkout; Node runs
+static prompt-contract and weakening tests, not a live agent/native execution proof. Workflow execution
 needs no Node helper. Native discovery/installation and host behavior require their
 own authorized verification; missing tools are disclosed, never called passes.

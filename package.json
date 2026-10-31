@@ -15,7 +15,13 @@
     "docs/",
     "INSTALL.md",
     "README.zh-CN.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "SECURITY.md",
+    ".claude-plugin/plugin.json",
+    ".claude-plugin/marketplace.json",
+    ".codex-plugin/plugin.json",
+    ".agents/plugins/marketplace.json",
+    "assets/icon.svg"
   ],
   "pi": {
     "skills": [
