@@ -3,11 +3,17 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-python3 <<'PY'
+if [[ $# -gt 1 || ( $# -eq 1 && "$1" != '--npm-release' ) ]]; then
+  echo 'usage: scripts/validate.sh [--npm-release]' >&2
+  exit 2
+fi
+
+python3 - "$@" <<'PY'
 import json, pathlib, re, sys
 from urllib.parse import unquote, urlsplit
 
 root = pathlib.Path.cwd().resolve()
+expected_name = '@lbk-open/super-spec' if sys.argv[1:] == ['--npm-release'] else 'super-spec'
 failures = []
 def fail(message): failures.append(message)
 
@@ -25,7 +31,7 @@ if len(versions) != 3 or len(set(versions.values())) != 1 or not all(versions.va
     fail(f'missing or mismatched versions: {versions}')
 if 'package.json' in data:
     package = data['package.json']
-    if package.get('name') != 'super-spec': fail('package.json: local package identity must be super-spec')
+    if package.get('name') != expected_name: fail(f'package.json: package identity must be {expected_name}')
     if package.get('pi', {}).get('skills') != ['./skills']: fail('package.json: Pi bundle declaration differs')
     if 'pi-package' not in package.get('keywords', []): fail('package.json: missing Pi discovery keyword')
 try:
@@ -110,7 +116,7 @@ for path in markdown:
 if failures:
     print('\n'.join('FAIL: ' + message for message in failures), file=sys.stderr)
     sys.exit(1)
-print(f'OK: {len(skill_dirs)} skills, local links/manifests/contracts valid, version {next(iter(versions.values()))}')
+print(f'OK: {len(skill_dirs)} skills, local links/manifests/contracts valid, package {expected_name}, version {next(iter(versions.values()))}')
 PY
 
 if command -v node >/dev/null 2>&1; then

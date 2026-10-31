@@ -172,7 +172,7 @@ test('result-shape: documented producer and consumer schema and rules match exac
 const validatorBlocks = String.raw`
 import ast, json, pathlib, sys
 script, fixture, request = sys.argv[1:]
-source = pathlib.Path(script).read_text().split("python3 <<'PY'\n", 1)[1].split('\nPY\n', 1)[0]
+source = pathlib.Path(script).read_text().split("<<'PY'\n", 1)[1].split('\nPY\n', 1)[0]
 module = ast.parse(source, filename=script)
 blocks = []
 for node in module.body:

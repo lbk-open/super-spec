@@ -6,10 +6,14 @@ SuperSpec 把功能交付、编码、根因调查、独立评审和兼容 OpenSp
 可移植的 Agent Skills（供编程助手读取的工作说明）。Claude Code、Codex、Pi 和
 OpenCode 共用一套文件，不需要安装工作流运行引擎。
 
-## 从本地开始
+## 从 npm/Pi 或检出目录安装
 
-使用当前检出目录和 [INSTALL.md](INSTALL.md)，不假定存在公开仓库地址或已发布的
-注册表包。安装前必须明确用户选择的助手和项目/全局范围。安装后可以说：
+已有的 npm/Pi 分发名称是 `@lbk-open/super-spec`；源码检出目录保留本地包名
+`super-spec`。按照 [INSTALL.md](INSTALL.md) 选择 Pi 包、本地插件或手动复制，
+安装前必须明确用户选择的助手和项目/全局范围。
+[Pi 市场条目](https://pi.dev/packages/@lbk-open/super-spec) 和此前 npm 0.1.1
+版本证明已有此分发渠道，不代表 0.2.0 已发布；安装指定版本前需查询注册表现有版本。
+安装后可以说：
 
 - 使用 ss-feature-workflow 实现这个需求。
 - 使用 ss-coding-workflow 的 lite 模式执行这个已批准计划。
@@ -75,9 +79,13 @@ full 模式交付真实的拉取请求，或在权限限制下如实交付本地
 - [角色、等待和恢复](docs/multi-agent.md)
 - [工作目录与多仓库](docs/worktree-and-multi-repo.md)
 - [持续规格](docs/spec-driven.md) · [安全质量规则](docs/guardrails.md)
-- [架构](docs/architecture.md) · [仓库指南](AGENTS.md)
-- [安全](SECURITY.md) · [发布边界](RELEASING.md) · [更新记录](CHANGELOG.md)
+- [架构](docs/architecture.md) · [安全](SECURITY.md) · [更新记录](CHANGELOG.md)
+- 仅完整源码检出目录提供：`AGENTS.md`（仓库指南）、`RELEASING.md`（发布边界）
 
-仓库使用 `./scripts/validate.sh` 验证；Node 测试检查静态提示契约及削弱条款的失败，
+npm 包包含技能、文档、本地插件清单和 Codex 图标，不包含 Git 历史、仓库指令、
+测试或发布工具。开发和发布需使用完整检出目录；现有 GitHub v0.2.0 标签并非修复后
+npm 候选包的源码身份，详见检出目录中的 `RELEASING.md`。
+
+完整检出目录使用 `./scripts/validate.sh` 验证；Node 测试检查静态提示契约及削弱条款的失败，
 不证明真实助手或平台已经执行成功。工作流本身不需要 Node 辅助程序。原生安装、
 技能发现和宿主行为需要单独获准的真实验证；缺少工具必须如实披露，不能当作通过。
